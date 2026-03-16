@@ -1,0 +1,15 @@
+{
+    "name": "OrcaFilamentLibrary",
+    "version": "02.03.02.51",
+    "force_update": "0",
+    "description": "Orca Filament Library",
+    "filament_list": [
+        {
+            "name": "Generic PLA Turbo @System",
+            "sub_path": "filament/Generic PLA Turbo @System.json"
+        }
+    ],
+    "process_list": [],
+    "machine_model_list": [],
+    "machine_list": []
+}
