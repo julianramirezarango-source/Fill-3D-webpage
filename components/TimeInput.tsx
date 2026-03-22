@@ -51,7 +51,7 @@ export function TimeInput({ prepMinutes, postMinutes, hourlyRateCOP, onChange }:
         <input
           type="number" min={0} step={1000} value={hourlyRateCOP}
           onChange={e => onChange('hourlyRateCOP', Number(e.target.value))}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5E33D9]"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#5E33D9]"
         />
       </div>
     </div>

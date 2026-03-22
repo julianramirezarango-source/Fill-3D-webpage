@@ -1,9 +1,9 @@
 1:"$Sreact.fragment"
 2:I[47257,["/wiki/calculadora/_next/static/chunks/0dbhjjzl8qfwv.js"],"ClientPageRoot"]
-3:I[31713,["/wiki/calculadora/_next/static/chunks/0dbhjjzl8qfwv.js","/wiki/calculadora/_next/static/chunks/0hmn7c1xzv611.js","/wiki/calculadora/_next/static/chunks/08et81miidkw5.js"],"default"]
+3:I[31713,["/wiki/calculadora/_next/static/chunks/0dbhjjzl8qfwv.js","/wiki/calculadora/_next/static/chunks/0hmn7c1xzv611.js","/wiki/calculadora/_next/static/chunks/0k7y6zq~scm43.js"],"default"]
 6:I[97367,["/wiki/calculadora/_next/static/chunks/0dbhjjzl8qfwv.js"],"OutletBoundary"]
 7:"$Sreact.suspense"
-0:{"rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/wiki/calculadora/_next/static/chunks/0hmn7c1xzv611.js","async":true}],["$","script","script-1",{"src":"/wiki/calculadora/_next/static/chunks/08et81miidkw5.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"VJJwvewYT9cGzAxF4xwET"}
+0:{"rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/wiki/calculadora/_next/static/chunks/0hmn7c1xzv611.js","async":true}],["$","script","script-1",{"src":"/wiki/calculadora/_next/static/chunks/0k7y6zq~scm43.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"kKYlXvzUDbv672ZOfDwsk"}
 4:{}
 5:"$0:rsc:props:children:0:props:serverProvidedParams:params"
 8:null

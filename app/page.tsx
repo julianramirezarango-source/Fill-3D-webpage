@@ -1,6 +1,6 @@
 'use client'
 
-import { useReducer, useMemo, useEffect, useRef } from 'react'
+import { useReducer, useMemo, useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import FileUpload from '@/components/FileUpload'
 import { Section } from '@/components/Section'
@@ -14,13 +14,14 @@ import { ShippingInput } from '@/components/ShippingInput'
 import { FinalSummary } from '@/components/FinalSummary'
 import { getMaterial } from '@/lib/materials'
 import { estimateSlice } from '@/lib/slicerEstimate'
+import { geometricSlice } from '@/lib/geometricSlicer'
 import { calculateFullPrice } from '@/lib/fullPriceCalc'
 import { exportToPDF, exportToExcel } from '@/lib/export'
-import type { Orientation } from '@/lib/slicerEstimate'
+import type { Orientation, SliceResult } from '@/lib/slicerEstimate'
 
 const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { ssr: false })
 
-// ─── State ──────────────────────────────────────────────────────────────────
+// ─── State ───────────────────────────────────────────────────────────────────
 
 interface CalcState {
   fileName: string | null
@@ -79,8 +80,6 @@ type Action =
   | { type: 'SET_SHIPPING'; field: string; v: number | boolean }
   | { type: 'RESET' }
 
-const DEFAULT_PRICE_PER_GRAM = getMaterial('pla').pricePerGram
-
 const initialState: CalcState = {
   fileName: null,
   stlBuffer: null,
@@ -97,7 +96,7 @@ const initialState: CalcState = {
   manualGrams: '',
   manualHours: '',
 
-  pricePerGram: DEFAULT_PRICE_PER_GRAM,
+  pricePerGram: getMaterial('pla').pricePerGram,
   wattsPerHour: 250,
   kwhPriceCOP: 900,
   machineCostCOP: 2500000,
@@ -121,44 +120,49 @@ const initialState: CalcState = {
 
 function reducer(s: CalcState, a: Action): CalcState {
   switch (a.type) {
-    case 'SET_FILE':    return { ...s, fileName: a.fileName, stlBuffer: a.stlBuffer ?? null, volumeCm3: a.volumeCm3, error: null }
-    case 'SET_ERROR':   return { ...s, error: a.msg }
-    case 'CLEAR_ERROR': return { ...s, error: null }
+    case 'SET_FILE':     return { ...s, fileName: a.fileName, stlBuffer: a.stlBuffer ?? null, volumeCm3: a.volumeCm3, error: null }
+    case 'SET_ERROR':    return { ...s, error: a.msg }
+    case 'CLEAR_ERROR':  return { ...s, error: null }
     case 'SET_ORIENTATION': return { ...s, orientation: a.v }
     case 'SET_MATERIAL': {
       const mat = getMaterial(a.v)
       return { ...s, materialId: a.v, pricePerGram: mat.pricePerGram }
     }
-    case 'SET_LAYER_HEIGHT': return { ...s, layerHeight: a.v }
-    case 'SET_INFILL':      return { ...s, infill: a.v }
-    case 'SET_SUPPORTS':    return { ...s, supports: a.v }
-    case 'SET_PERIMETERS':  return { ...s, perimeters: a.v }
-    case 'SET_SLICER_MODE': return { ...s, slicerMode: a.v }
-    case 'SET_MANUAL_GRAMS': return { ...s, manualGrams: a.v }
-    case 'SET_MANUAL_HOURS': return { ...s, manualHours: a.v }
+    case 'SET_LAYER_HEIGHT':  return { ...s, layerHeight: a.v }
+    case 'SET_INFILL':        return { ...s, infill: a.v }
+    case 'SET_SUPPORTS':      return { ...s, supports: a.v }
+    case 'SET_PERIMETERS':    return { ...s, perimeters: a.v }
+    case 'SET_SLICER_MODE':   return { ...s, slicerMode: a.v }
+    case 'SET_MANUAL_GRAMS':  return { ...s, manualGrams: a.v }
+    case 'SET_MANUAL_HOURS':  return { ...s, manualHours: a.v }
     case 'SET_MACHINE':  return { ...s, [a.field]: a.v }
     case 'SET_TIME':     return { ...s, [a.field]: a.v }
     case 'SET_MARGIN':   return { ...s, [a.field]: a.v }
     case 'SET_SHIPPING': return { ...s, [a.field]: a.v }
-    case 'RESET': return { ...initialState }
+    case 'RESET':        return { ...initialState }
     default: return s
   }
 }
 
-// ─── Page ────────────────────────────────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CalculadoraPage() {
   const [s, dispatch] = useReducer(reducer, initialState)
 
-  // Persist machine/time/margin prefs in localStorage
+  // 'upload' = require file  |  'skip' = go directly to manual data entry
+  const [fileMode, setFileMode] = useState<'upload' | 'skip'>('upload')
+
+  // Whether sections 2-9 should be active
+  const dataReady = fileMode === 'skip' || !!s.volumeCm3
+
+  // ── Persist user preferences ─────────────────────────────────────────────
   useEffect(() => {
     try {
       const saved = localStorage.getItem('fill3d-prefs')
-      if (saved) {
-        const p = JSON.parse(saved)
-        const fields = ['pricePerGram','wattsPerHour','kwhPriceCOP','machineCostCOP','machineLifetimeHours','prepMinutes','postMinutes','hourlyRateCOP','failureRate','profitMargin']
-        fields.forEach(f => { if (p[f] != null) dispatch({ type: 'SET_MACHINE', field: f, v: p[f] }) })
-      }
+      if (!saved) return
+      const p = JSON.parse(saved) as Record<string, number>
+      const fields = ['pricePerGram','wattsPerHour','kwhPriceCOP','machineCostCOP','machineLifetimeHours','prepMinutes','postMinutes','hourlyRateCOP','failureRate','profitMargin']
+      fields.forEach(f => { if (p[f] != null) dispatch({ type: 'SET_MACHINE', field: f, v: p[f] }) })
     } catch { /* ignore */ }
   }, [])
 
@@ -171,25 +175,63 @@ export default function CalculadoraPage() {
 
   const material = useMemo(() => getMaterial(s.materialId), [s.materialId])
 
-  const sliceEstimate = useMemo(() => {
-    if (!s.volumeCm3 || s.slicerMode !== 'estimate') return null
-    return estimateSlice({
-      volumeCm3: s.volumeCm3,
-      orientation: s.orientation,
-      material,
-      layerHeight: s.layerHeight,
-      infill: s.infill,
-      supports: s.supports,
-      perimeters: s.perimeters,
-    })
-  }, [s.volumeCm3, s.orientation, material, s.layerHeight, s.infill, s.supports, s.perimeters, s.slicerMode])
+  // ── Geometric / estimated slicer (async to avoid UI freeze) ──────────────
+  const [sliceResult, setSliceResult] = useState<SliceResult | null>(null)
+  const [slicing, setSlicing] = useState(false)
+
+  useEffect(() => {
+    if (s.slicerMode !== 'estimate') {
+      setSliceResult(null)
+      return
+    }
+
+    // Use geometric slicer when STL buffer is available
+    if (s.stlBuffer) {
+      setSlicing(true)
+      const id = setTimeout(() => {
+        try {
+          const result = geometricSlice(s.stlBuffer!, {
+            volumeCm3: s.volumeCm3 ?? 1,
+            orientation: s.orientation,
+            material,
+            layerHeight: s.layerHeight,
+            infill: s.infill,
+            supports: s.supports,
+            perimeters: s.perimeters,
+          })
+          setSliceResult(result)
+        } catch (e) {
+          console.error('geometricSlice error:', e)
+          setSliceResult(null)
+        } finally {
+          setSlicing(false)
+        }
+      }, 20)
+      return () => clearTimeout(id)
+    }
+
+    // No buffer (3MF or no file) — fall back to mathematical estimator
+    if (s.volumeCm3) {
+      setSliceResult(estimateSlice({
+        volumeCm3: s.volumeCm3,
+        orientation: s.orientation,
+        material,
+        layerHeight: s.layerHeight,
+        infill: s.infill,
+        supports: s.supports,
+        perimeters: s.perimeters,
+      }))
+    } else {
+      setSliceResult(null)
+    }
+  }, [s.stlBuffer, s.volumeCm3, s.orientation, s.materialId, s.layerHeight, s.infill, s.supports, s.perimeters, s.slicerMode, material])
 
   const effectiveGrams = s.slicerMode === 'estimate'
-    ? (sliceEstimate?.totalGrams ?? 0)
+    ? (sliceResult?.totalGrams ?? 0)
     : (parseFloat(s.manualGrams) || 0)
 
   const effectiveHours = s.slicerMode === 'estimate'
-    ? (sliceEstimate?.printHours ?? 0)
+    ? (sliceResult?.printHours ?? 0)
     : (parseFloat(s.manualHours) || 0)
 
   const breakdown = useMemo(() => {
@@ -218,12 +260,10 @@ export default function CalculadoraPage() {
   // Accumulate buffer+volume before dispatching SET_FILE
   const pendingBuffer = useRef<{ buf: ArrayBuffer; type: 'stl' | '3mf' } | null>(null)
 
-  const fileLoaded = !!s.volumeCm3
-
   const handleExportPDF = async () => {
-    if (!breakdown || !s.fileName) return
+    if (!breakdown) return
     await exportToPDF({
-      fileName: s.fileName,
+      fileName: s.fileName ?? 'modelo',
       materialName: material.name,
       layerHeight: s.layerHeight,
       infill: s.infill,
@@ -235,9 +275,9 @@ export default function CalculadoraPage() {
   }
 
   const handleExportExcel = async () => {
-    if (!breakdown || !s.fileName) return
+    if (!breakdown) return
     await exportToExcel({
-      fileName: s.fileName,
+      fileName: s.fileName ?? 'modelo',
       materialName: material.name,
       layerHeight: s.layerHeight,
       infill: s.infill,
@@ -247,6 +287,14 @@ export default function CalculadoraPage() {
       breakdown,
     })
   }
+
+  const handleSwitchFileMode = (mode: 'upload' | 'skip') => {
+    setFileMode(mode)
+    // When skipping file, force manual slicer mode since there's nothing to estimate
+    if (mode === 'skip') dispatch({ type: 'SET_SLICER_MODE', v: 'manual' })
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -258,9 +306,9 @@ export default function CalculadoraPage() {
             <span className="font-bold text-gray-900">Fill-3D</span>
             <span className="text-gray-400 text-sm hidden sm:inline">· Calculadora de Impresión</span>
           </div>
-          {fileLoaded && (
+          {(dataReady) && (
             <button
-              onClick={() => dispatch({ type: 'RESET' })}
+              onClick={() => { dispatch({ type: 'RESET' }); setFileMode('upload') }}
               className="text-sm text-gray-500 hover:text-[#5E33D9] transition-colors cursor-pointer"
             >
               ↺ Nueva pieza
@@ -281,10 +329,27 @@ export default function CalculadoraPage() {
 
         {/* 1 — Archivo */}
         <Section step={1} title="Carga tu modelo 3D">
-          {!fileLoaded ? (
+          {/* File mode toggle */}
+          <div className="flex gap-2 mb-4">
+            {(['upload', 'skip'] as const).map(mode => (
+              <button
+                key={mode}
+                onClick={() => handleSwitchFileMode(mode)}
+                className={`flex-1 py-2 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer
+                  ${fileMode === mode
+                    ? 'border-[#5E33D9] bg-[#f5f3ff] text-[#4F25C6]'
+                    : 'border-gray-200 text-gray-600 hover:border-[#c4b5fd]'
+                  }`}
+              >
+                {mode === 'upload' ? '📁 Subir archivo STL / 3MF' : '✏️ Ingresar datos manualmente'}
+              </button>
+            ))}
+          </div>
+
+          {fileMode === 'upload' && !s.volumeCm3 && (
             <div>
               <p className="text-sm text-gray-500 mb-4">
-                Acepta <span className="font-mono">.STL</span> y <span className="font-mono">.3MF</span>. El archivo se procesa en tu navegador — no se sube a ningún servidor.
+                El archivo se procesa completamente en tu navegador — no se sube a ningún servidor.
               </p>
               <FileUpload
                 onBufferReady={(buf, type) => { pendingBuffer.current = { buf, type } }}
@@ -296,12 +361,14 @@ export default function CalculadoraPage() {
                 onError={msg => dispatch({ type: 'SET_ERROR', msg })}
               />
             </div>
-          ) : (
+          )}
+
+          {fileMode === 'upload' && s.volumeCm3 && (
             <div className="flex items-center gap-3 text-sm text-gray-700">
               <span className="text-green-500 text-xl">✓</span>
               <span className="font-medium">{s.fileName}</span>
               <span className="text-gray-400">·</span>
-              <span className="text-gray-500">{s.volumeCm3?.toFixed(2)} cm³</span>
+              <span className="text-gray-500">{s.volumeCm3.toFixed(2)} cm³</span>
               <button
                 onClick={() => dispatch({ type: 'RESET' })}
                 className="ml-auto text-xs text-gray-400 hover:text-[#5E33D9] underline cursor-pointer"
@@ -310,23 +377,31 @@ export default function CalculadoraPage() {
               </button>
             </div>
           )}
+
+          {fileMode === 'skip' && (
+            <p className="text-sm text-gray-500">
+              Ingresa los gramos y tiempo directamente en la sección 4 (desde tu slicer).
+            </p>
+          )}
         </Section>
 
-        {/* 2 — Orientación */}
-        <Section step={2} title="Orientación de impresión" isLocked={!fileLoaded}>
-          <div className="grid md:grid-cols-2 gap-4">
-            {s.stlBuffer && (
-              <ModelViewer buffer={s.stlBuffer} orientation={s.orientation} />
-            )}
-            <OrientationSelector
-              value={s.orientation}
-              onChange={v => dispatch({ type: 'SET_ORIENTATION', v })}
-            />
-          </div>
-        </Section>
+        {/* 2 — Orientación (only when file is loaded) */}
+        {fileMode === 'upload' && (
+          <Section step={2} title="Orientación de impresión" isLocked={!s.volumeCm3}>
+            <div className="grid md:grid-cols-2 gap-4">
+              {s.stlBuffer && (
+                <ModelViewer buffer={s.stlBuffer} orientation={s.orientation} />
+              )}
+              <OrientationSelector
+                value={s.orientation}
+                onChange={v => dispatch({ type: 'SET_ORIENTATION', v })}
+              />
+            </div>
+          </Section>
+        )}
 
         {/* 3 — Configuración */}
-        <Section step={3} title="Configuración de impresión" isLocked={!fileLoaded}>
+        <Section step={fileMode === 'upload' ? 3 : 2} title="Configuración de impresión" isLocked={!dataReady}>
           <PrintConfig
             materialId={s.materialId}
             layerHeight={s.layerHeight}
@@ -342,12 +417,14 @@ export default function CalculadoraPage() {
         </Section>
 
         {/* 4 — Material y tiempo */}
-        <Section step={4} title="Material y tiempo estimado" isLocked={!fileLoaded}>
+        <Section step={fileMode === 'upload' ? 4 : 3} title="Material y tiempo" isLocked={!dataReady}>
           <SlicerSection
             mode={s.slicerMode}
-            estimate={sliceEstimate}
+            estimate={sliceResult}
+            slicing={slicing}
             manualGrams={s.manualGrams}
             manualHours={s.manualHours}
+            hasBuffer={!!s.stlBuffer}
             onMode={v => dispatch({ type: 'SET_SLICER_MODE', v })}
             onManualGrams={v => dispatch({ type: 'SET_MANUAL_GRAMS', v })}
             onManualHours={v => dispatch({ type: 'SET_MANUAL_HOURS', v })}
@@ -355,7 +432,7 @@ export default function CalculadoraPage() {
         </Section>
 
         {/* 5 — Costos de máquina */}
-        <Section step={5} title="Costos de máquina" isLocked={!fileLoaded}>
+        <Section step={fileMode === 'upload' ? 5 : 4} title="Costos de máquina" isLocked={!dataReady}>
           <MachineConfig
             materialId={s.materialId}
             pricePerGram={s.pricePerGram}
@@ -368,7 +445,7 @@ export default function CalculadoraPage() {
         </Section>
 
         {/* 6 — Tu tiempo */}
-        <Section step={6} title="Tu tiempo" isLocked={!fileLoaded}>
+        <Section step={fileMode === 'upload' ? 6 : 5} title="Tu tiempo" isLocked={!dataReady}>
           <TimeInput
             prepMinutes={s.prepMinutes}
             postMinutes={s.postMinutes}
@@ -378,7 +455,7 @@ export default function CalculadoraPage() {
         </Section>
 
         {/* 7 — Margen y riesgo */}
-        <Section step={7} title="Margen y tasa de fallo" isLocked={!fileLoaded}>
+        <Section step={fileMode === 'upload' ? 7 : 6} title="Margen y tasa de fallo" isLocked={!dataReady}>
           <MarginInput
             failureRate={s.failureRate}
             profitMargin={s.profitMargin}
@@ -387,7 +464,7 @@ export default function CalculadoraPage() {
         </Section>
 
         {/* 8 — Envío y extras */}
-        <Section step={8} title="Envío, empaque e impuestos" isLocked={!fileLoaded}>
+        <Section step={fileMode === 'upload' ? 8 : 7} title="Envío, empaque e impuestos" isLocked={!dataReady}>
           <ShippingInput
             packagingEnabled={s.packagingEnabled}
             packagingCost={s.packagingCost}
@@ -400,7 +477,7 @@ export default function CalculadoraPage() {
 
         {/* 9 — Resumen final */}
         {breakdown && (
-          <Section step={9} title="Resumen y precio final">
+          <Section step={fileMode === 'upload' ? 9 : 8} title="Resumen y precio final">
             <FinalSummary
               breakdown={breakdown}
               grams={effectiveGrams}
