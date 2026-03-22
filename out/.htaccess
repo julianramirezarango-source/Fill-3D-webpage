@@ -1,0 +1,9 @@
+# Detiene redirecciones del .htaccess padre (ej. WordPress)
+RewriteEngine Off
+
+# Servir archivos estáticos directamente
+Options -Indexes
+
+# Tipos de archivo correctos
+AddType application/javascript .js
+AddType text/css .css
