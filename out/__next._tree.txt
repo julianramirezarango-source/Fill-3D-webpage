@@ -1,2 +1,2 @@
-:HL["/wiki/calculadora/_next/static/chunks/0xuzg.1rrv5o5.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"BP5_8z1FZLN2EGXw4fhxJ"}
+:HL["/wiki/calculadora/_next/static/chunks/0mmt-l9-beyy_.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"VJJwvewYT9cGzAxF4xwET"}

@@ -13,12 +13,12 @@ function SliderInput({ label, value, min, max, step, unit, onChange }: {
     <div>
       <div className="flex justify-between items-center mb-1">
         <label className="text-sm font-semibold text-gray-700">{label}</label>
-        <span className="text-sm font-bold text-orange-600">{value} {unit}</span>
+        <span className="text-sm font-bold text-[#5E33D9]">{value} {unit}</span>
       </div>
       <input
         type="range" min={min} max={max} step={step} value={value}
         onChange={e => onChange(Number(e.target.value))}
-        className="w-full accent-orange-500"
+        className="w-full accent-[#5E33D9]"
       />
       <div className="flex justify-between text-xs text-gray-400 mt-0.5">
         <span>{min} {unit}</span>
@@ -44,14 +44,14 @@ export function TimeInput({ prepMinutes, postMinutes, hourlyRateCOP, onChange }:
       <div>
         <div className="flex justify-between items-center mb-1">
           <label className="text-sm font-semibold text-gray-700">Tu tarifa por hora</label>
-          <span className="text-sm font-bold text-orange-600">
+          <span className="text-sm font-bold text-[#5E33D9]">
             {new Intl.NumberFormat('es-CO').format(hourlyRateCOP)} COP/h
           </span>
         </div>
         <input
           type="number" min={0} step={1000} value={hourlyRateCOP}
           onChange={e => onChange('hourlyRateCOP', Number(e.target.value))}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5E33D9]"
         />
       </div>
     </div>

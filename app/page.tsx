@@ -261,7 +261,7 @@ export default function CalculadoraPage() {
           {fileLoaded && (
             <button
               onClick={() => dispatch({ type: 'RESET' })}
-              className="text-sm text-gray-500 hover:text-orange-500 transition-colors cursor-pointer"
+              className="text-sm text-gray-500 hover:text-[#5E33D9] transition-colors cursor-pointer"
             >
               ↺ Nueva pieza
             </button>
@@ -304,7 +304,7 @@ export default function CalculadoraPage() {
               <span className="text-gray-500">{s.volumeCm3?.toFixed(2)} cm³</span>
               <button
                 onClick={() => dispatch({ type: 'RESET' })}
-                className="ml-auto text-xs text-gray-400 hover:text-orange-500 underline cursor-pointer"
+                className="ml-auto text-xs text-gray-400 hover:text-[#5E33D9] underline cursor-pointer"
               >
                 Cambiar
               </button>

@@ -30,8 +30,8 @@ export function SlicerSection({
           onClick={() => onMode('estimate')}
           className={`flex-1 py-2 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer
             ${mode === 'estimate'
-              ? 'border-orange-500 bg-orange-50 text-orange-700'
-              : 'border-gray-200 text-gray-600 hover:border-orange-300'
+              ? 'border-[#5E33D9] bg-[#f5f3ff] text-[#4F25C6]'
+              : 'border-gray-200 text-gray-600 hover:border-[#c4b5fd]'
             }`}
         >
           Usar estimador
@@ -40,8 +40,8 @@ export function SlicerSection({
           onClick={() => onMode('manual')}
           className={`flex-1 py-2 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer
             ${mode === 'manual'
-              ? 'border-orange-500 bg-orange-50 text-orange-700'
-              : 'border-gray-200 text-gray-600 hover:border-orange-300'
+              ? 'border-[#5E33D9] bg-[#f5f3ff] text-[#4F25C6]'
+              : 'border-gray-200 text-gray-600 hover:border-[#c4b5fd]'
             }`}
         >
           Ingresar manualmente
@@ -53,11 +53,11 @@ export function SlicerSection({
           <p className="text-xs text-gray-400 italic">Estimación matemática basada en geometría del modelo (sin OrcaSlicer)</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
-              <p className="text-2xl font-bold text-orange-600">{estimate.totalGrams.toFixed(1)} g</p>
+              <p className="text-2xl font-bold text-[#5E33D9]">{estimate.totalGrams.toFixed(1)} g</p>
               <p className="text-xs text-gray-500 mt-1">Filamento total</p>
             </div>
             <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
-              <p className="text-2xl font-bold text-orange-600">{formatHours(estimate.printHours)}</p>
+              <p className="text-2xl font-bold text-[#5E33D9]">{formatHours(estimate.printHours)}</p>
               <p className="text-xs text-gray-500 mt-1">Tiempo de impresión</p>
             </div>
           </div>
@@ -89,7 +89,7 @@ export function SlicerSection({
                   type="number" min={0} step={0.1} value={manualGrams}
                   onChange={e => onManualGrams(e.target.value)}
                   placeholder="45.3"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm pr-8 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm pr-8 focus:outline-none focus:ring-2 focus:ring-[#5E33D9]"
                 />
                 <span className="absolute right-3 top-2 text-xs text-gray-400">g</span>
               </div>
@@ -101,7 +101,7 @@ export function SlicerSection({
                   type="number" min={0} step={0.1} value={manualHours}
                   onChange={e => onManualHours(e.target.value)}
                   placeholder="2.5"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm pr-8 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm pr-8 focus:outline-none focus:ring-2 focus:ring-[#5E33D9]"
                 />
                 <span className="absolute right-3 top-2 text-xs text-gray-400">h</span>
               </div>

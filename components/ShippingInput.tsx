@@ -16,7 +16,7 @@ export function ShippingInput({ packagingEnabled, packagingCost, shippingCost, t
           <input
             type="checkbox" checked={packagingEnabled}
             onChange={e => onChange('packagingEnabled', e.target.checked)}
-            className="w-4 h-4 accent-orange-500"
+            className="w-4 h-4 accent-[#5E33D9]"
           />
           <span className="text-sm font-semibold text-gray-700">Empaque</span>
         </label>
@@ -25,7 +25,7 @@ export function ShippingInput({ packagingEnabled, packagingCost, shippingCost, t
             <input
               type="number" min={0} step={500} value={packagingCost}
               onChange={e => onChange('packagingCost', Number(e.target.value))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5E33D9]"
             />
             <span className="absolute right-3 top-2 text-xs text-gray-400">COP</span>
           </div>
@@ -39,7 +39,7 @@ export function ShippingInput({ packagingEnabled, packagingCost, shippingCost, t
           <input
             type="number" min={0} step={1000} value={shippingCost}
             onChange={e => onChange('shippingCost', Number(e.target.value))}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5E33D9]"
           />
           <span className="absolute right-3 top-2 text-xs text-gray-400">COP</span>
         </div>
@@ -51,7 +51,7 @@ export function ShippingInput({ packagingEnabled, packagingCost, shippingCost, t
           <input
             type="checkbox" checked={taxEnabled}
             onChange={e => onChange('taxEnabled', e.target.checked)}
-            className="w-4 h-4 accent-orange-500"
+            className="w-4 h-4 accent-[#5E33D9]"
           />
           <span className="text-sm font-semibold text-gray-700">Impuestos / IVA</span>
         </label>
@@ -61,7 +61,7 @@ export function ShippingInput({ packagingEnabled, packagingCost, shippingCost, t
               <input
                 type="number" min={0} max={100} step={1} value={taxPercent}
                 onChange={e => onChange('taxPercent', Number(e.target.value))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5E33D9]"
               />
               <span className="absolute right-3 top-2 text-xs text-gray-400">%</span>
             </div>

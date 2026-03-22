@@ -32,8 +32,8 @@ export function OrientationSelector({ value, onChange }: Props) {
             onClick={() => onChange(opt.value)}
             className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer
               ${value === opt.value
-                ? 'border-orange-500 bg-orange-50 text-orange-700'
-                : 'border-gray-200 bg-white text-gray-600 hover:border-orange-300 hover:bg-orange-50/40'
+                ? 'border-[#5E33D9] bg-[#f5f3ff] text-[#4F25C6]'
+                : 'border-gray-200 bg-white text-gray-600 hover:border-[#c4b5fd] hover:bg-[#f5f3ff]/40'
               }`}
           >
             <span className="text-xl">{opt.icon}</span>

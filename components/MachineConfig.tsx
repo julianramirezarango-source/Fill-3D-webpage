@@ -21,7 +21,7 @@ function NumInput({ label, value, onChange, min, step, suffix }: {
         <input
           type="number" min={min ?? 0} step={step ?? 1} value={value}
           onChange={e => onChange(Number(e.target.value))}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5E33D9]"
         />
         {suffix && <span className="absolute right-3 top-2 text-xs text-gray-400">{suffix}</span>}
       </div>

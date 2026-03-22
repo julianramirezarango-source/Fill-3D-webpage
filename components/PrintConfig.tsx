@@ -34,7 +34,7 @@ export function PrintConfig({
               title={m.description}
               className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all cursor-pointer
                 ${materialId === m.id
-                  ? 'border-orange-500 bg-orange-50'
+                  ? 'border-[#5E33D9] bg-[#f5f3ff]'
                   : 'border-gray-200 hover:border-gray-300'
                 }`}
             >
@@ -55,8 +55,8 @@ export function PrintConfig({
               onClick={() => onLayerHeight(h)}
               className={`flex-1 py-2 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer
                 ${layerHeight === h
-                  ? 'border-orange-500 bg-orange-50 text-orange-700'
-                  : 'border-gray-200 text-gray-600 hover:border-orange-300'
+                  ? 'border-[#5E33D9] bg-[#f5f3ff] text-[#4F25C6]'
+                  : 'border-gray-200 text-gray-600 hover:border-[#c4b5fd]'
                 }`}
             >
               {h} mm
@@ -69,7 +69,7 @@ export function PrintConfig({
       <div>
         <div className="flex justify-between items-center mb-2">
           <label className="text-sm font-semibold text-gray-700">Relleno (infill)</label>
-          <span className="text-sm font-bold text-orange-600">{infill}%</span>
+          <span className="text-sm font-bold text-[#5E33D9]">{infill}%</span>
         </div>
         <div className="flex gap-2 mb-2">
           {INFILL_PRESETS.map(p => (
@@ -78,8 +78,8 @@ export function PrintConfig({
               onClick={() => onInfill(p)}
               className={`px-3 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer
                 ${infill === p
-                  ? 'border-orange-500 bg-orange-50 text-orange-700'
-                  : 'border-gray-200 text-gray-500 hover:border-orange-300'
+                  ? 'border-[#5E33D9] bg-[#f5f3ff] text-[#4F25C6]'
+                  : 'border-gray-200 text-gray-500 hover:border-[#c4b5fd]'
                 }`}
             >
               {p}%
@@ -89,7 +89,7 @@ export function PrintConfig({
         <input
           type="range" min={10} max={100} step={5} value={infill}
           onChange={e => onInfill(Number(e.target.value))}
-          className="w-full accent-orange-500"
+          className="w-full accent-[#5E33D9]"
         />
       </div>
 
@@ -104,8 +104,8 @@ export function PrintConfig({
                 onClick={() => onSupports(v)}
                 className={`px-4 py-2 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer
                   ${supports === v
-                    ? 'border-orange-500 bg-orange-50 text-orange-700'
-                    : 'border-gray-200 text-gray-600 hover:border-orange-300'
+                    ? 'border-[#5E33D9] bg-[#f5f3ff] text-[#4F25C6]'
+                    : 'border-gray-200 text-gray-600 hover:border-[#c4b5fd]'
                   }`}
               >
                 {v ? 'Sí' : 'No'}
@@ -123,8 +123,8 @@ export function PrintConfig({
                 onClick={() => onPerimeters(p)}
                 className={`w-10 py-2 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer
                   ${perimeters === p
-                    ? 'border-orange-500 bg-orange-50 text-orange-700'
-                    : 'border-gray-200 text-gray-600 hover:border-orange-300'
+                    ? 'border-[#5E33D9] bg-[#f5f3ff] text-[#4F25C6]'
+                    : 'border-gray-200 text-gray-600 hover:border-[#c4b5fd]'
                   }`}
               >
                 {p}
