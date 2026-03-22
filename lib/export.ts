@@ -48,7 +48,7 @@ export async function exportToPDF(data: ExportData): Promise<void> {
       ['Filamento estimado', `${data.grams.toFixed(1)} g`],
       ['Tiempo de impresión', formatHours(data.hours)],
     ],
-    headStyles: { fillColor: [249, 115, 22] },
+    headStyles: { fillColor: [94, 51, 217] },
     theme: 'striped',
   })
 
@@ -73,7 +73,7 @@ export async function exportToPDF(data: ExportData): Promise<void> {
       ...(data.breakdown.taxAmount > 0     ? [['Impuestos', formatCOP(data.breakdown.taxAmount)]] : []),
     ],
     foot: [['PRECIO FINAL SUGERIDO', formatCOP(data.breakdown.total)]],
-    headStyles: { fillColor: [249, 115, 22] },
+    headStyles: { fillColor: [94, 51, 217] },
     footStyles: { fillColor: [30, 30, 30], fontStyle: 'bold', fontSize: 12 },
     theme: 'striped',
   })

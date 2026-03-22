@@ -55,7 +55,7 @@ export default function ModelViewer({ buffer, orientation = 'z-' }: ModelViewerP
     geometry.computeVertexNormals()
     geometry.center()
 
-    const mat  = new THREE.MeshPhongMaterial({ color: 0xf97316, specular: 0x444444, shininess: 40 })
+    const mat  = new THREE.MeshPhongMaterial({ color: 0x5E33D9, specular: 0x444444, shininess: 40 })
     const mesh = new THREE.Mesh(geometry, mat)
     scene.add(mesh)
     meshRef.current = mesh

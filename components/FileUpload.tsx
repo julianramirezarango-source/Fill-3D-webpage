@@ -80,10 +80,10 @@ export default function FileUpload({ onVolumeParsed, onBufferReady, onError }: F
       onDrop={handleDrop}
       className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer
         ${isDragging
-          ? 'border-orange-500 bg-orange-50'
+          ? 'border-[#5E33D9] bg-[#f5f3ff]'
           : fileName
             ? 'border-green-500 bg-green-50'
-            : 'border-gray-300 bg-gray-50 hover:border-orange-400 hover:bg-orange-50'
+            : 'border-gray-300 bg-gray-50 hover:border-[#a78bfa] hover:bg-[#f5f3ff]'
         }`}
     >
       <input
@@ -96,7 +96,7 @@ export default function FileUpload({ onVolumeParsed, onBufferReady, onError }: F
 
       {isLoading ? (
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-[#5E33D9] border-t-transparent rounded-full animate-spin" />
           <p className="text-gray-600 font-medium">Analizando modelo 3D...</p>
         </div>
       ) : fileName ? (

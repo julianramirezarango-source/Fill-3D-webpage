@@ -36,16 +36,16 @@ export function FinalSummary({ breakdown, grams, hours, onExportPDF, onExportExc
     <div className="space-y-4">
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-orange-50 rounded-xl p-3 text-center">
-          <p className="text-xl font-bold text-orange-600">{grams.toFixed(1)} g</p>
+        <div className="bg-[#f5f3ff] rounded-xl p-3 text-center">
+          <p className="text-xl font-bold text-[#5E33D9]">{grams.toFixed(1)} g</p>
           <p className="text-xs text-gray-500 mt-0.5">Filamento</p>
         </div>
-        <div className="bg-orange-50 rounded-xl p-3 text-center">
-          <p className="text-xl font-bold text-orange-600">{formatHours(hours)}</p>
+        <div className="bg-[#f5f3ff] rounded-xl p-3 text-center">
+          <p className="text-xl font-bold text-[#5E33D9]">{formatHours(hours)}</p>
           <p className="text-xs text-gray-500 mt-0.5">Impresión</p>
         </div>
-        <div className="bg-orange-50 rounded-xl p-3 text-center">
-          <p className="text-xl font-bold text-orange-600">{formatCOP(breakdown.pricePerGram)}</p>
+        <div className="bg-[#f5f3ff] rounded-xl p-3 text-center">
+          <p className="text-xl font-bold text-[#5E33D9]">{formatCOP(breakdown.pricePerGram)}</p>
           <p className="text-xs text-gray-500 mt-0.5">Precio/gramo</p>
         </div>
       </div>
@@ -86,7 +86,7 @@ export function FinalSummary({ breakdown, grams, hours, onExportPDF, onExportExc
       {/* Total */}
       <div className="bg-gray-900 rounded-xl px-5 py-4 flex justify-between items-center">
         <span className="text-white font-semibold text-lg">Precio final sugerido</span>
-        <span className="text-orange-400 font-bold text-2xl font-mono">{formatCOP(breakdown.total)}</span>
+        <span className="text-[#7c5ce1] font-bold text-2xl font-mono">{formatCOP(breakdown.total)}</span>
       </div>
 
       {/* Export */}

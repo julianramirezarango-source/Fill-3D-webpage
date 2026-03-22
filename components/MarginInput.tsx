@@ -14,12 +14,12 @@ function PercentSlider({ label, hint, value, max, onChange }: {
           <span className="text-sm font-semibold text-gray-700">{label}</span>
           <p className="text-xs text-gray-400">{hint}</p>
         </div>
-        <span className="text-lg font-bold text-orange-600 ml-2">{value}%</span>
+        <span className="text-lg font-bold text-[#5E33D9] ml-2">{value}%</span>
       </div>
       <input
         type="range" min={0} max={max} step={1} value={value}
         onChange={e => onChange(Number(e.target.value))}
-        className="w-full accent-orange-500"
+        className="w-full accent-[#5E33D9]"
       />
       <div className="flex justify-between text-xs text-gray-400 mt-0.5">
         <span>0%</span>
