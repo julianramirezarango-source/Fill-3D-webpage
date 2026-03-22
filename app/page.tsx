@@ -1,242 +1,414 @@
-'use client';
+'use client'
 
-import { useState, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-import FileUpload from '@/components/FileUpload';
-import MaterialSelector from '@/components/MaterialSelector';
-import QualitySelector from '@/components/QualitySelector';
-import PriceResult from '@/components/PriceResult';
-import { MATERIALS, QUALITIES, Material, Quality } from '@/lib/materials';
-import { calculatePrice, PriceBreakdown } from '@/lib/calculatePrice';
+import { useReducer, useMemo, useEffect, useRef } from 'react'
+import dynamic from 'next/dynamic'
+import FileUpload from '@/components/FileUpload'
+import { Section } from '@/components/Section'
+import { OrientationSelector } from '@/components/OrientationSelector'
+import { PrintConfig } from '@/components/PrintConfig'
+import { SlicerSection } from '@/components/SlicerSection'
+import { MachineConfig } from '@/components/MachineConfig'
+import { TimeInput } from '@/components/TimeInput'
+import { MarginInput } from '@/components/MarginInput'
+import { ShippingInput } from '@/components/ShippingInput'
+import { FinalSummary } from '@/components/FinalSummary'
+import { getMaterial } from '@/lib/materials'
+import { estimateSlice } from '@/lib/slicerEstimate'
+import { calculateFullPrice } from '@/lib/fullPriceCalc'
+import { exportToPDF, exportToExcel } from '@/lib/export'
+import type { Orientation } from '@/lib/slicerEstimate'
 
-// Three.js viewer — client-side only (uses browser APIs)
-const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { ssr: false });
+const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { ssr: false })
 
-type Step = 'upload' | 'material' | 'quality' | 'result';
+// ─── State ──────────────────────────────────────────────────────────────────
 
-function StepIndicator({ current }: { current: Step }) {
-  const steps: { id: Step; label: string; icon: string }[] = [
-    { id: 'upload', label: 'Archivo', icon: '📁' },
-    { id: 'material', label: 'Material', icon: '🧱' },
-    { id: 'quality', label: 'Calidad', icon: '⚙️' },
-    { id: 'result', label: 'Precio', icon: '💰' },
-  ];
-  const order: Step[] = ['upload', 'material', 'quality', 'result'];
-  const currentIdx = order.indexOf(current);
+interface CalcState {
+  fileName: string | null
+  stlBuffer: ArrayBuffer | null
+  volumeCm3: number | null
 
-  return (
-    <div className="flex items-center justify-center gap-0 mb-8 overflow-x-auto">
-      {steps.map((step, i) => {
-        const done = i < currentIdx;
-        const active = i === currentIdx;
-        return (
-          <div key={step.id} className="flex items-center">
-            <div
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
-                ${active ? 'bg-orange-500 text-white shadow-md' : done ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}
-            >
-              <span>{done ? '✓' : step.icon}</span>
-              <span className="hidden sm:inline">{step.label}</span>
-            </div>
-            {i < steps.length - 1 && (
-              <div className={`h-0.5 w-6 mx-1 ${i < currentIdx ? 'bg-green-400' : 'bg-gray-200'}`} />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
+  orientation: Orientation
+  materialId: string
+  layerHeight: 0.15 | 0.2 | 0.3
+  infill: number
+  supports: boolean
+  perimeters: 2 | 3 | 4
+
+  slicerMode: 'estimate' | 'manual'
+  manualGrams: string
+  manualHours: string
+
+  pricePerGram: number
+  wattsPerHour: number
+  kwhPriceCOP: number
+  machineCostCOP: number
+  machineLifetimeHours: number
+
+  prepMinutes: number
+  postMinutes: number
+  hourlyRateCOP: number
+
+  failureRate: number
+  profitMargin: number
+
+  packagingEnabled: boolean
+  packagingCost: number
+  shippingCost: number
+  taxEnabled: boolean
+  taxPercent: number
+
+  error: string | null
 }
 
+type Action =
+  | { type: 'SET_FILE'; fileName: string; stlBuffer: ArrayBuffer | null; volumeCm3: number }
+  | { type: 'SET_ERROR'; msg: string }
+  | { type: 'CLEAR_ERROR' }
+  | { type: 'SET_ORIENTATION'; v: Orientation }
+  | { type: 'SET_MATERIAL'; v: string }
+  | { type: 'SET_LAYER_HEIGHT'; v: 0.15 | 0.2 | 0.3 }
+  | { type: 'SET_INFILL'; v: number }
+  | { type: 'SET_SUPPORTS'; v: boolean }
+  | { type: 'SET_PERIMETERS'; v: 2 | 3 | 4 }
+  | { type: 'SET_SLICER_MODE'; v: 'estimate' | 'manual' }
+  | { type: 'SET_MANUAL_GRAMS'; v: string }
+  | { type: 'SET_MANUAL_HOURS'; v: string }
+  | { type: 'SET_MACHINE'; field: string; v: number }
+  | { type: 'SET_TIME'; field: string; v: number }
+  | { type: 'SET_MARGIN'; field: string; v: number }
+  | { type: 'SET_SHIPPING'; field: string; v: number | boolean }
+  | { type: 'RESET' }
+
+const DEFAULT_PRICE_PER_GRAM = getMaterial('pla').pricePerGram
+
+const initialState: CalcState = {
+  fileName: null,
+  stlBuffer: null,
+  volumeCm3: null,
+
+  orientation: 'z-',
+  materialId: 'pla',
+  layerHeight: 0.2,
+  infill: 20,
+  supports: false,
+  perimeters: 3,
+
+  slicerMode: 'estimate',
+  manualGrams: '',
+  manualHours: '',
+
+  pricePerGram: DEFAULT_PRICE_PER_GRAM,
+  wattsPerHour: 250,
+  kwhPriceCOP: 900,
+  machineCostCOP: 2500000,
+  machineLifetimeHours: 2000,
+
+  prepMinutes: 15,
+  postMinutes: 10,
+  hourlyRateCOP: 15000,
+
+  failureRate: 5,
+  profitMargin: 30,
+
+  packagingEnabled: false,
+  packagingCost: 2000,
+  shippingCost: 0,
+  taxEnabled: false,
+  taxPercent: 19,
+
+  error: null,
+}
+
+function reducer(s: CalcState, a: Action): CalcState {
+  switch (a.type) {
+    case 'SET_FILE':    return { ...s, fileName: a.fileName, stlBuffer: a.stlBuffer ?? null, volumeCm3: a.volumeCm3, error: null }
+    case 'SET_ERROR':   return { ...s, error: a.msg }
+    case 'CLEAR_ERROR': return { ...s, error: null }
+    case 'SET_ORIENTATION': return { ...s, orientation: a.v }
+    case 'SET_MATERIAL': {
+      const mat = getMaterial(a.v)
+      return { ...s, materialId: a.v, pricePerGram: mat.pricePerGram }
+    }
+    case 'SET_LAYER_HEIGHT': return { ...s, layerHeight: a.v }
+    case 'SET_INFILL':      return { ...s, infill: a.v }
+    case 'SET_SUPPORTS':    return { ...s, supports: a.v }
+    case 'SET_PERIMETERS':  return { ...s, perimeters: a.v }
+    case 'SET_SLICER_MODE': return { ...s, slicerMode: a.v }
+    case 'SET_MANUAL_GRAMS': return { ...s, manualGrams: a.v }
+    case 'SET_MANUAL_HOURS': return { ...s, manualHours: a.v }
+    case 'SET_MACHINE':  return { ...s, [a.field]: a.v }
+    case 'SET_TIME':     return { ...s, [a.field]: a.v }
+    case 'SET_MARGIN':   return { ...s, [a.field]: a.v }
+    case 'SET_SHIPPING': return { ...s, [a.field]: a.v }
+    case 'RESET': return { ...initialState }
+    default: return s
+  }
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+
 export default function CalculadoraPage() {
-  const [step, setStep] = useState<Step>('upload');
-  const [volumeCm3, setVolumeCm3] = useState<number | null>(null);
-  const [fileName, setFileName] = useState<string>('');
-  const [stlBuffer, setStlBuffer] = useState<ArrayBuffer | null>(null);
-  const [material, setMaterial] = useState<Material>(MATERIALS[0]);
-  const [quality, setQuality] = useState<Quality>(QUALITIES[1]);
-  const [breakdown, setBreakdown] = useState<PriceBreakdown | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [s, dispatch] = useReducer(reducer, initialState)
 
-  const handleVolumeParsed = useCallback((vol: number, name: string) => {
-    setVolumeCm3(vol);
-    setFileName(name);
-    setError(null);
-    setStep('material');
-  }, []);
+  // Persist machine/time/margin prefs in localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('fill3d-prefs')
+      if (saved) {
+        const p = JSON.parse(saved)
+        const fields = ['pricePerGram','wattsPerHour','kwhPriceCOP','machineCostCOP','machineLifetimeHours','prepMinutes','postMinutes','hourlyRateCOP','failureRate','profitMargin']
+        fields.forEach(f => { if (p[f] != null) dispatch({ type: 'SET_MACHINE', field: f, v: p[f] }) })
+      }
+    } catch { /* ignore */ }
+  }, [])
 
-  const handleBufferReady = useCallback((buffer: ArrayBuffer, fileType: 'stl' | '3mf') => {
-    if (fileType === 'stl') {
-      setStlBuffer(buffer);
-    } else {
-      setStlBuffer(null); // 3MF: no viewer yet
-    }
-  }, []);
+  useEffect(() => {
+    try {
+      const prefs = { pricePerGram: s.pricePerGram, wattsPerHour: s.wattsPerHour, kwhPriceCOP: s.kwhPriceCOP, machineCostCOP: s.machineCostCOP, machineLifetimeHours: s.machineLifetimeHours, prepMinutes: s.prepMinutes, postMinutes: s.postMinutes, hourlyRateCOP: s.hourlyRateCOP, failureRate: s.failureRate, profitMargin: s.profitMargin }
+      localStorage.setItem('fill3d-prefs', JSON.stringify(prefs))
+    } catch { /* ignore */ }
+  }, [s.pricePerGram, s.wattsPerHour, s.kwhPriceCOP, s.machineCostCOP, s.machineLifetimeHours, s.prepMinutes, s.postMinutes, s.hourlyRateCOP, s.failureRate, s.profitMargin])
 
-  const handleError = useCallback((msg: string) => {
-    setError(msg);
-  }, []);
+  const material = useMemo(() => getMaterial(s.materialId), [s.materialId])
 
-  const handleQualityNext = () => {
-    if (volumeCm3 !== null) {
-      const result = calculatePrice(volumeCm3, material, quality);
-      setBreakdown(result);
-      setStep('result');
-    }
-  };
+  const sliceEstimate = useMemo(() => {
+    if (!s.volumeCm3 || s.slicerMode !== 'estimate') return null
+    return estimateSlice({
+      volumeCm3: s.volumeCm3,
+      orientation: s.orientation,
+      material,
+      layerHeight: s.layerHeight,
+      infill: s.infill,
+      supports: s.supports,
+      perimeters: s.perimeters,
+    })
+  }, [s.volumeCm3, s.orientation, material, s.layerHeight, s.infill, s.supports, s.perimeters, s.slicerMode])
 
-  const handleReset = () => {
-    setStep('upload');
-    setVolumeCm3(null);
-    setFileName('');
-    setStlBuffer(null);
-    setMaterial(MATERIALS[0]);
-    setQuality(QUALITIES[1]);
-    setBreakdown(null);
-    setError(null);
-  };
+  const effectiveGrams = s.slicerMode === 'estimate'
+    ? (sliceEstimate?.totalGrams ?? 0)
+    : (parseFloat(s.manualGrams) || 0)
+
+  const effectiveHours = s.slicerMode === 'estimate'
+    ? (sliceEstimate?.printHours ?? 0)
+    : (parseFloat(s.manualHours) || 0)
+
+  const breakdown = useMemo(() => {
+    if (!effectiveGrams && !effectiveHours) return null
+    return calculateFullPrice({
+      grams: effectiveGrams,
+      hours: effectiveHours,
+      pricePerGram: s.pricePerGram,
+      wattsPerHour: s.wattsPerHour,
+      kwhPriceCOP: s.kwhPriceCOP,
+      machineCostCOP: s.machineCostCOP,
+      machineLifetimeHours: s.machineLifetimeHours,
+      prepMinutes: s.prepMinutes,
+      postMinutes: s.postMinutes,
+      hourlyRateCOP: s.hourlyRateCOP,
+      failureRate: s.failureRate,
+      profitMargin: s.profitMargin,
+      packagingEnabled: s.packagingEnabled,
+      packagingCost: s.packagingCost,
+      shippingCost: s.shippingCost,
+      taxEnabled: s.taxEnabled,
+      taxPercent: s.taxPercent,
+    })
+  }, [effectiveGrams, effectiveHours, s.pricePerGram, s.wattsPerHour, s.kwhPriceCOP, s.machineCostCOP, s.machineLifetimeHours, s.prepMinutes, s.postMinutes, s.hourlyRateCOP, s.failureRate, s.profitMargin, s.packagingEnabled, s.packagingCost, s.shippingCost, s.taxEnabled, s.taxPercent])
+
+  // Accumulate buffer+volume before dispatching SET_FILE
+  const pendingBuffer = useRef<{ buf: ArrayBuffer; type: 'stl' | '3mf' } | null>(null)
+
+  const fileLoaded = !!s.volumeCm3
+
+  const handleExportPDF = async () => {
+    if (!breakdown || !s.fileName) return
+    await exportToPDF({
+      fileName: s.fileName,
+      materialName: material.name,
+      layerHeight: s.layerHeight,
+      infill: s.infill,
+      supports: s.supports,
+      grams: effectiveGrams,
+      hours: effectiveHours,
+      breakdown,
+    })
+  }
+
+  const handleExportExcel = async () => {
+    if (!breakdown || !s.fileName) return
+    await exportToExcel({
+      fileName: s.fileName,
+      materialName: material.name,
+      layerHeight: s.layerHeight,
+      infill: s.infill,
+      supports: s.supports,
+      grams: effectiveGrams,
+      hours: effectiveHours,
+      breakdown,
+    })
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🖨️</span>
             <span className="font-bold text-gray-900">Fill-3D</span>
             <span className="text-gray-400 text-sm hidden sm:inline">· Calculadora de Impresión</span>
           </div>
-          {step !== 'upload' && (
+          {fileLoaded && (
             <button
-              onClick={handleReset}
-              className="text-sm text-gray-500 hover:text-orange-500 transition-colors"
+              onClick={() => dispatch({ type: 'RESET' })}
+              className="text-sm text-gray-500 hover:text-orange-500 transition-colors cursor-pointer"
             >
-              ↺ Reiniciar
+              ↺ Nueva pieza
             </button>
           )}
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-8">
-        <StepIndicator current={step} />
-
+      <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {/* Error banner */}
-        {error && (
-          <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-2">
+        {s.error && (
+          <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-2">
             <span>⚠️</span>
-            <span>{error}</span>
+            <span className="flex-1">{s.error}</span>
+            <button onClick={() => dispatch({ type: 'CLEAR_ERROR' })} className="text-red-400 hover:text-red-600 cursor-pointer">✕</button>
           </div>
         )}
 
-        {/* Step 1: File Upload */}
-        {step === 'upload' && (
-          <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Sube tu modelo 3D
-            </h2>
-            <p className="text-gray-500 mb-6">
-              Acepta archivos <span className="font-mono">.STL</span> y{' '}
-              <span className="font-mono">.3MF</span>. El archivo se procesa
-              completamente en tu navegador — no se sube a ningún servidor.
-            </p>
-            <FileUpload
-              onVolumeParsed={handleVolumeParsed}
-              onBufferReady={handleBufferReady}
-              onError={handleError}
+        {/* 1 — Archivo */}
+        <Section step={1} title="Carga tu modelo 3D">
+          {!fileLoaded ? (
+            <div>
+              <p className="text-sm text-gray-500 mb-4">
+                Acepta <span className="font-mono">.STL</span> y <span className="font-mono">.3MF</span>. El archivo se procesa en tu navegador — no se sube a ningún servidor.
+              </p>
+              <FileUpload
+                onBufferReady={(buf, type) => { pendingBuffer.current = { buf, type } }}
+                onVolumeParsed={(vol, name) => {
+                  const stlBuf = pendingBuffer.current?.type === 'stl' ? pendingBuffer.current.buf : null
+                  pendingBuffer.current = null
+                  dispatch({ type: 'SET_FILE', fileName: name, stlBuffer: stlBuf!, volumeCm3: vol })
+                }}
+                onError={msg => dispatch({ type: 'SET_ERROR', msg })}
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 text-sm text-gray-700">
+              <span className="text-green-500 text-xl">✓</span>
+              <span className="font-medium">{s.fileName}</span>
+              <span className="text-gray-400">·</span>
+              <span className="text-gray-500">{s.volumeCm3?.toFixed(2)} cm³</span>
+              <button
+                onClick={() => dispatch({ type: 'RESET' })}
+                className="ml-auto text-xs text-gray-400 hover:text-orange-500 underline cursor-pointer"
+              >
+                Cambiar
+              </button>
+            </div>
+          )}
+        </Section>
+
+        {/* 2 — Orientación */}
+        <Section step={2} title="Orientación de impresión" isLocked={!fileLoaded}>
+          <div className="grid md:grid-cols-2 gap-4">
+            {s.stlBuffer && (
+              <ModelViewer buffer={s.stlBuffer} orientation={s.orientation} />
+            )}
+            <OrientationSelector
+              value={s.orientation}
+              onChange={v => dispatch({ type: 'SET_ORIENTATION', v })}
             />
-          </section>
-        )}
+          </div>
+        </Section>
 
-        {/* Step 2: Material — show viewer + selector */}
-        {step === 'material' && (
-          <section className="flex flex-col gap-6">
-            {/* 3D preview */}
-            {stlBuffer ? (
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-2">Vista previa del modelo</p>
-                <ModelViewer buffer={stlBuffer} />
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-700 text-sm">
-                <span>ℹ️</span>
-                <span>Vista previa disponible solo para archivos .STL</span>
-              </div>
-            )}
+        {/* 3 — Configuración */}
+        <Section step={3} title="Configuración de impresión" isLocked={!fileLoaded}>
+          <PrintConfig
+            materialId={s.materialId}
+            layerHeight={s.layerHeight}
+            infill={s.infill}
+            supports={s.supports}
+            perimeters={s.perimeters}
+            onMaterial={v => dispatch({ type: 'SET_MATERIAL', v })}
+            onLayerHeight={v => dispatch({ type: 'SET_LAYER_HEIGHT', v })}
+            onInfill={v => dispatch({ type: 'SET_INFILL', v })}
+            onSupports={v => dispatch({ type: 'SET_SUPPORTS', v })}
+            onPerimeters={v => dispatch({ type: 'SET_PERIMETERS', v })}
+          />
+        </Section>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Selecciona el material
-              </h2>
-              <p className="text-gray-500 mb-4">
-                Cada material tiene diferentes propiedades mecánicas y precio.
-              </p>
-              <MaterialSelector selected={material} onChange={setMaterial} />
-            </div>
+        {/* 4 — Material y tiempo */}
+        <Section step={4} title="Material y tiempo estimado" isLocked={!fileLoaded}>
+          <SlicerSection
+            mode={s.slicerMode}
+            estimate={sliceEstimate}
+            manualGrams={s.manualGrams}
+            manualHours={s.manualHours}
+            onMode={v => dispatch({ type: 'SET_SLICER_MODE', v })}
+            onManualGrams={v => dispatch({ type: 'SET_MANUAL_GRAMS', v })}
+            onManualHours={v => dispatch({ type: 'SET_MANUAL_HOURS', v })}
+          />
+        </Section>
 
-            <button
-              onClick={() => setStep('quality')}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-colors"
-            >
-              Continuar →
-            </button>
-          </section>
-        )}
+        {/* 5 — Costos de máquina */}
+        <Section step={5} title="Costos de máquina" isLocked={!fileLoaded}>
+          <MachineConfig
+            materialId={s.materialId}
+            pricePerGram={s.pricePerGram}
+            wattsPerHour={s.wattsPerHour}
+            kwhPriceCOP={s.kwhPriceCOP}
+            machineCostCOP={s.machineCostCOP}
+            machineLifetimeHours={s.machineLifetimeHours}
+            onChange={(field, v) => dispatch({ type: 'SET_MACHINE', field, v })}
+          />
+        </Section>
 
-        {/* Step 3: Quality — show viewer + selector */}
-        {step === 'quality' && (
-          <section className="flex flex-col gap-6">
-            {stlBuffer && (
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-2">Vista previa del modelo</p>
-                <ModelViewer buffer={stlBuffer} />
-              </div>
-            )}
+        {/* 6 — Tu tiempo */}
+        <Section step={6} title="Tu tiempo" isLocked={!fileLoaded}>
+          <TimeInput
+            prepMinutes={s.prepMinutes}
+            postMinutes={s.postMinutes}
+            hourlyRateCOP={s.hourlyRateCOP}
+            onChange={(field, v) => dispatch({ type: 'SET_TIME', field, v })}
+          />
+        </Section>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Selecciona la calidad
-              </h2>
-              <p className="text-gray-500 mb-4">
-                Mayor calidad = capas más delgadas = más tiempo de impresión.
-              </p>
-              <QualitySelector selected={quality} onChange={setQuality} />
-            </div>
+        {/* 7 — Margen y riesgo */}
+        <Section step={7} title="Margen y tasa de fallo" isLocked={!fileLoaded}>
+          <MarginInput
+            failureRate={s.failureRate}
+            profitMargin={s.profitMargin}
+            onChange={(field, v) => dispatch({ type: 'SET_MARGIN', field, v })}
+          />
+        </Section>
 
-            <button
-              onClick={handleQualityNext}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-colors"
-            >
-              Ver precio →
-            </button>
-          </section>
-        )}
+        {/* 8 — Envío y extras */}
+        <Section step={8} title="Envío, empaque e impuestos" isLocked={!fileLoaded}>
+          <ShippingInput
+            packagingEnabled={s.packagingEnabled}
+            packagingCost={s.packagingCost}
+            shippingCost={s.shippingCost}
+            taxEnabled={s.taxEnabled}
+            taxPercent={s.taxPercent}
+            onChange={(field, v) => dispatch({ type: 'SET_SHIPPING', field, v })}
+          />
+        </Section>
 
-        {/* Step 4: Result */}
-        {step === 'result' && breakdown && (
-          <section className="flex flex-col gap-4">
-            {stlBuffer && (
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-2">Tu modelo</p>
-                <ModelViewer buffer={stlBuffer} />
-              </div>
-            )}
-
-            <h2 className="text-2xl font-bold text-gray-900">
-              Tu cotización
-            </h2>
-            <PriceResult
+        {/* 9 — Resumen final */}
+        {breakdown && (
+          <Section step={9} title="Resumen y precio final">
+            <FinalSummary
               breakdown={breakdown}
-              material={material}
-              quality={quality}
-              fileName={fileName}
+              grams={effectiveGrams}
+              hours={effectiveHours}
+              onExportPDF={handleExportPDF}
+              onExportExcel={handleExportExcel}
             />
-            <button
-              onClick={handleReset}
-              className="w-full border-2 border-gray-200 hover:border-orange-400 text-gray-600 hover:text-orange-600 font-semibold py-3 rounded-xl transition-colors"
-            >
-              ↺ Calcular otra pieza
-            </button>
-          </section>
+          </Section>
         )}
       </main>
 
@@ -245,5 +417,5 @@ export default function CalculadoraPage() {
         <a href="https://fill-3d.com" className="hover:underline">fill-3d.com</a>
       </footer>
     </div>
-  );
+  )
 }
