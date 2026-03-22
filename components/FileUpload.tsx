@@ -6,10 +6,11 @@ import { parse3MF } from '@/lib/parse3MF';
 
 interface FileUploadProps {
   onVolumeParsed: (volumeCm3: number, fileName: string) => void;
+  onBufferReady?: (buffer: ArrayBuffer, fileType: 'stl' | '3mf') => void;
   onError: (message: string) => void;
 }
 
-export default function FileUpload({ onVolumeParsed, onError }: FileUploadProps) {
+export default function FileUpload({ onVolumeParsed, onBufferReady, onError }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -31,8 +32,11 @@ export default function FileUpload({ onVolumeParsed, onError }: FileUploadProps)
 
         if (ext === 'stl') {
           volume = await parseSTL(buffer);
+          onBufferReady?.(buffer, 'stl');
         } else {
           volume = await parse3MF(buffer);
+          // 3MF viewer not supported yet
+          onBufferReady?.(buffer, '3mf');
         }
 
         if (volume <= 0) {
@@ -51,7 +55,7 @@ export default function FileUpload({ onVolumeParsed, onError }: FileUploadProps)
         setIsLoading(false);
       }
     },
-    [onVolumeParsed, onError]
+    [onVolumeParsed, onBufferReady, onError]
   );
 
   const handleDrop = useCallback(
