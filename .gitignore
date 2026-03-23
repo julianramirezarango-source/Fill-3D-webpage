@@ -46,3 +46,5 @@ content/dist/
 content/generated-images/
 content/out/*.mp4
 content/out/*.webm
+content/.tiktok-token.json
+content/.env

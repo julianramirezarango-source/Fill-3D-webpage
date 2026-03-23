@@ -10,7 +10,11 @@
     "render:all": "npm run render:intro && npm run render:showcase",
     "images": "ts-node src/images/generate.ts",
     "images:hero": "ts-node src/images/generate.ts hero",
-    "research": "autoresearch run --config src/research/config.ts"
+    "research": "autoresearch run --config src/research/config.ts",
+    "tiktok:auth": "ts-node src/tiktok/auth.ts",
+    "tiktok:post": "ts-node src/tiktok/upload.ts",
+    "tiktok:post:intro": "ts-node src/tiktok/upload.ts --video out/intro.mp4",
+    "tiktok": "npm run render:showcase && npm run tiktok:post"
   },
   "keywords": [
     "content",
@@ -26,6 +30,9 @@
     "@remotion/cli": "^4.0.438",
     "@remotion/player": "^4.0.438",
     "autoresearch": "^0.0.1",
+    "axios": "^1.13.6",
+    "dotenv": "^17.3.1",
+    "open": "^11.0.0",
     "remotion": "^4.0.438"
   },
   "devDependencies": {
