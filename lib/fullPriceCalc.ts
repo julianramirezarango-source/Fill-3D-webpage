@@ -57,7 +57,7 @@ export function calculateFullPrice(inputs: PriceInputs): PriceBreakdown {
   const depreciationCost = inputs.hours * (inputs.machineCostCOP / inputs.machineLifetimeHours)
   const subtotalMachine = filamentCost + energyCost + depreciationCost
 
-  const totalTimeHours = inputs.hours + (inputs.prepMinutes + inputs.postMinutes) / 60
+  const totalTimeHours = (inputs.prepMinutes + inputs.postMinutes) / 60
   const timeCost       = totalTimeHours * inputs.hourlyRateCOP
 
   const subtotalBeforeFailure = subtotalMachine + timeCost
