@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# content tool outputs
+content/node_modules/
+content/dist/
+content/generated-images/
+content/out/*.mp4
+content/out/*.webm
