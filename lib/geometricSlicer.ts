@@ -173,14 +173,10 @@ export function geometricSlice(buffer: ArrayBuffer, input: SliceInput): SliceRes
     triZMax[i] = Math.max(t.v0.z, t.v1.z, t.v2.z)
   }
 
-  // 5. Slice layer by layer — accumulate shell, infill, and per-layer area/perimeter
+  // 5. Slice layer by layer — accumulate shell and infill volumes
   const layerCount = Math.ceil(height / layerHeight)
   let totalShellMm3  = 0
   let totalInfillMm3 = 0
-
-  // Store per-layer area and perimeter for support detection in step 6
-  const layerAreas  = new Float64Array(layerCount)
-  const layerPerims = new Float64Array(layerCount)
 
   for (let li = 0; li < layerCount; li++) {
     const z = (li + 0.5) * layerHeight // sample at mid-layer
@@ -204,10 +200,6 @@ export function geometricSlice(buffer: ArrayBuffer, input: SliceInput): SliceRes
     }
 
     const area = Math.abs(signedArea)
-    layerAreas[li]  = area
-    layerPerims[li] = perimeter
-
-    // Shell area: all perimeter lines at this layer
     const shellArea = Math.min(area, perimeter * perimeters * lineWidth)
     const coreArea  = Math.max(0, area - shellArea)
 
@@ -215,32 +207,51 @@ export function geometricSlice(buffer: ArrayBuffer, input: SliceInput): SliceRes
     totalInfillMm3 += coreArea * (infill / 100) * layerHeight
   }
 
-  // 6. Support material — layerwise unsupported-area detection
+  // 6. Support material — per-face overhang detection (same criterion as OrcaSlicer/PrusaSlicer)
   //
-  //    Compare each layer's cross-section area to the previous layer's.
-  //    Any area that grew beyond what a 45° overhang allows needs support.
-  //    Allowed growth per layer = previous perimeter × layerHeight
-  //    (a 45° overhang can extend outward by ≤ layerHeight mm per layer per mm of perimeter).
+  //    A face needs support when its outward normal points more than 45° below horizontal,
+  //    i.e. normalZ < -cos(45°) ≈ -0.707. Because we already rotated every vertex in step 2,
+  //    the normals computed here are in print-space: orientation is automatically accounted for.
   //
-  //    This is inherently orientation-dependent because the layer areas are computed
-  //    from the already-rotated geometry: a Benchy in z- (standard) has gradual area
-  //    growth → little support; a Benchy on its side has large sudden area jumps →
-  //    much more support.
+  //    Examples:
+  //      Benchy z- (standard upright) → only cabin/funnel faces satisfy nz < -0.707 → little support
+  //      Benchy z+ (upside-down)      → entire deck area has nz ≈ -1               → lots of support
+  //      Benchy y+ (on its side)      → hull flank with original ny < -0.707 → nz ≈ -1 after rotation → moderate support
+  //
+  //    Volume formula: projectedArea × centroidZ × fillDensity
+  //      projectedArea = |Z component of edge cross-product| / 2  (exact XY projection of the face)
+  //      centroidZ     = height from build plate to face centre (proxy for support column height)
+  //      fillDensity   = 0.15  (15% — typical slicer default for support structures)
   let supportMm3 = 0
-  if (supports && layerCount > 1) {
-    let prevArea  = layerAreas[0]  // layer 0 sits on the build plate — no support needed
-    let prevPerim = layerPerims[0]
-    for (let li = 1; li < layerCount; li++) {
-      const area  = layerAreas[li]
-      // Use the previous layer's perimeter: it represents the "footprint" that can
-      // grow outward, before the new island/overhang perimeter inflates the budget
-      const allowed      = prevPerim * layerHeight  // mm² of free overhang at 45°
-      const unsupported  = Math.max(0, area - prevArea - allowed)
-      supportMm3 += unsupported * layerHeight
-      prevArea  = area
-      prevPerim = layerPerims[li]
+  if (supports) {
+    const OVERHANG_COS = -0.707  // cos(135°) — faces pointing > 45° below horizontal
+    const minZ = layerHeight * 2 // ignore faces that are sitting on or near the build plate
+
+    for (let ti = 0; ti < tris.length; ti++) {
+      const t = tris[ti]
+
+      // Edge vectors from v0
+      const ax = t.v1.x - t.v0.x, ay = t.v1.y - t.v0.y, az = t.v1.z - t.v0.z
+      const bx = t.v2.x - t.v0.x, by = t.v2.y - t.v0.y, bz = t.v2.z - t.v0.z
+
+      // Cross product — Z component is 2× the XY projected area (signed)
+      const cx = ay * bz - az * by
+      const cy = az * bx - ax * bz
+      const cz = ax * by - ay * bx  // = 2 × projectedArea (signed)
+
+      const lenSq = cx * cx + cy * cy + cz * cz
+      if (lenSq < 1e-24) continue  // degenerate triangle
+
+      // Normalised Z component of the face normal
+      const nz = cz / Math.sqrt(lenSq)
+      if (nz >= OVERHANG_COS) continue  // not a significant overhang
+
+      const centroidZ = (t.v0.z + t.v1.z + t.v2.z) / 3
+      if (centroidZ <= minZ) continue  // on or near the build plate — no support needed
+
+      const projArea = Math.abs(cz) * 0.5  // exact XY projection of this face
+      supportMm3 += projArea * centroidZ * 0.15
     }
-    supportMm3 *= 0.15  // 15% fill density for support structures
   }
 
   // 7. Mass calculation
