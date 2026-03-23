@@ -74,24 +74,6 @@ function intersectTri(tri: Tri, z: number): { a: Vec2; b: Vec2 } | null {
   return null
 }
 
-// Face normal (unit vector)
-function faceNormal(tri: Tri): Vec3 {
-  const ax = tri.v1.x - tri.v0.x, ay = tri.v1.y - tri.v0.y, az = tri.v1.z - tri.v0.z
-  const bx = tri.v2.x - tri.v0.x, by = tri.v2.y - tri.v0.y, bz = tri.v2.z - tri.v0.z
-  const nx = ay * bz - az * by
-  const ny = az * bx - ax * bz
-  const nz = ax * by - ay * bx
-  const len = Math.sqrt(nx * nx + ny * ny + nz * nz)
-  if (len < 1e-12) return { x: 0, y: 0, z: 0 }
-  return { x: nx / len, y: ny / len, z: nz / len }
-}
-
-// Projected area of triangle onto XY plane
-function projectedArea(tri: Tri): number {
-  const ax = tri.v1.x - tri.v0.x, ay = tri.v1.y - tri.v0.y
-  const bx = tri.v2.x - tri.v0.x, by = tri.v2.y - tri.v0.y
-  return Math.abs(ax * by - ay * bx) / 2
-}
 
 // ─── STL parser ──────────────────────────────────────────────────────────────
 
@@ -191,10 +173,14 @@ export function geometricSlice(buffer: ArrayBuffer, input: SliceInput): SliceRes
     triZMax[i] = Math.max(t.v0.z, t.v1.z, t.v2.z)
   }
 
-  // 5. Slice layer by layer — accumulate shell and infill volumes
+  // 5. Slice layer by layer — accumulate shell, infill, and per-layer area/perimeter
   const layerCount = Math.ceil(height / layerHeight)
   let totalShellMm3  = 0
   let totalInfillMm3 = 0
+
+  // Store per-layer area and perimeter for support detection in step 6
+  const layerAreas  = new Float64Array(layerCount)
+  const layerPerims = new Float64Array(layerCount)
 
   for (let li = 0; li < layerCount; li++) {
     const z = (li + 0.5) * layerHeight // sample at mid-layer
@@ -218,6 +204,8 @@ export function geometricSlice(buffer: ArrayBuffer, input: SliceInput): SliceRes
     }
 
     const area = Math.abs(signedArea)
+    layerAreas[li]  = area
+    layerPerims[li] = perimeter
 
     // Shell area: all perimeter lines at this layer
     const shellArea = Math.min(area, perimeter * perimeters * lineWidth)
@@ -227,23 +215,32 @@ export function geometricSlice(buffer: ArrayBuffer, input: SliceInput): SliceRes
     totalInfillMm3 += coreArea * (infill / 100) * layerHeight
   }
 
-  // 6. Support material — detect overhanging faces (normal.z < −cos 45° ≈ −0.5)
-  //    Only faces above the first 2 layers need supports (faces at z=0 are on the plate).
+  // 6. Support material — layerwise unsupported-area detection
+  //
+  //    Compare each layer's cross-section area to the previous layer's.
+  //    Any area that grew beyond what a 45° overhang allows needs support.
+  //    Allowed growth per layer = previous perimeter × layerHeight
+  //    (a 45° overhang can extend outward by ≤ layerHeight mm per layer per mm of perimeter).
+  //
+  //    This is inherently orientation-dependent because the layer areas are computed
+  //    from the already-rotated geometry: a Benchy in z- (standard) has gradual area
+  //    growth → little support; a Benchy on its side has large sudden area jumps →
+  //    much more support.
   let supportMm3 = 0
-  if (supports) {
-    const baseThreshold = layerHeight * 2
-
-    for (let ti = 0; ti < tris.length; ti++) {
-      const t   = tris[ti]
-      const nrm = faceNormal(t)
-      if (nrm.z >= -0.5) continue // not a significant overhang
-
-      const centroidZ = (t.v0.z + t.v1.z + t.v2.z) / 3
-      if (centroidZ <= baseThreshold) continue // sitting on or near the build plate
-
-      // Support column: projected area × height × 15 % fill density
-      supportMm3 += projectedArea(t) * centroidZ * 0.15
+  if (supports && layerCount > 1) {
+    let prevArea  = layerAreas[0]  // layer 0 sits on the build plate — no support needed
+    let prevPerim = layerPerims[0]
+    for (let li = 1; li < layerCount; li++) {
+      const area  = layerAreas[li]
+      // Use the previous layer's perimeter: it represents the "footprint" that can
+      // grow outward, before the new island/overhang perimeter inflates the budget
+      const allowed      = prevPerim * layerHeight  // mm² of free overhang at 45°
+      const unsupported  = Math.max(0, area - prevArea - allowed)
+      supportMm3 += unsupported * layerHeight
+      prevArea  = area
+      prevPerim = layerPerims[li]
     }
+    supportMm3 *= 0.15  // 15% fill density for support structures
   }
 
   // 7. Mass calculation
