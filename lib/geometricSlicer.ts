@@ -95,34 +95,13 @@ function projectedArea(tri: Tri): number {
 
 // ─── STL parser ──────────────────────────────────────────────────────────────
 
-function parseSTLTriangles(buffer: ArrayBuffer): Tri[] {
+function parseBinarySTL(buffer: ArrayBuffer): Tri[] {
   const tris: Tri[] = []
-
-  // Peek at header to detect ASCII vs binary
-  const header5 = new Uint8Array(buffer, 0, Math.min(5, buffer.byteLength))
-  const isMaybeAscii = String.fromCharCode(...header5).toLowerCase().startsWith('solid')
-
-  if (isMaybeAscii) {
-    const text = new TextDecoder().decode(buffer)
-    const re = /vertex\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)/g
-    const verts: Vec3[] = []
-    let m: RegExpExecArray | null
-    while ((m = re.exec(text)) !== null) {
-      verts.push({ x: +m[1], y: +m[2], z: +m[3] })
-    }
-    for (let i = 0; i + 2 < verts.length; i += 3) {
-      tris.push({ v0: verts[i], v1: verts[i + 1], v2: verts[i + 2] })
-    }
-    return tris
-  }
-
-  // Binary: 80-byte header + 4-byte count + 50 bytes/triangle
   if (buffer.byteLength < 84) return tris
   const view  = new DataView(buffer)
   const count = view.getUint32(80, true)
   const maxCount = Math.floor((buffer.byteLength - 84) / 50)
   const safeCount = Math.min(count, maxCount)
-
   for (let i = 0; i < safeCount; i++) {
     const o = 84 + i * 50
     tris.push({
@@ -132,6 +111,38 @@ function parseSTLTriangles(buffer: ArrayBuffer): Tri[] {
     })
   }
   return tris
+}
+
+function parseAsciiSTL(buffer: ArrayBuffer): Tri[] {
+  const tris: Tri[] = []
+  const text = new TextDecoder().decode(buffer)
+  const re = /vertex\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)/g
+  const verts: Vec3[] = []
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text)) !== null) {
+    verts.push({ x: +m[1], y: +m[2], z: +m[3] })
+  }
+  for (let i = 0; i + 2 < verts.length; i += 3) {
+    tris.push({ v0: verts[i], v1: verts[i + 1], v2: verts[i + 2] })
+  }
+  return tris
+}
+
+function parseSTLTriangles(buffer: ArrayBuffer): Tri[] {
+  // Reliable binary detection: size must match 84 + count×50 (±1 for optional trailing byte)
+  // Many binary STL files start with "solid" in their header, so text-prefix check alone is not enough.
+  if (buffer.byteLength >= 84) {
+    const count = new DataView(buffer).getUint32(80, true)
+    const expectedSize = 84 + count * 50
+    if (Math.abs(buffer.byteLength - expectedSize) <= 1) {
+      return parseBinarySTL(buffer)
+    }
+  }
+
+  // Fall back to ASCII; if it yields nothing, try binary anyway
+  const asciiTris = parseAsciiSTL(buffer)
+  if (asciiTris.length > 0) return asciiTris
+  return parseBinarySTL(buffer)
 }
 
 // ─── Main slicer ─────────────────────────────────────────────────────────────
