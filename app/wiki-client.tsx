@@ -545,10 +545,7 @@ export default function WikiClient() {
                 </nav>
               )}
 
-              {/* Article title */}
-              {title && <h1 className="text-3xl font-bold text-gray-900 mb-6">{title}</h1>}
-
-              {/* Rendered markdown */}
+              {/* Rendered markdown — title comes from the H1 inside the markdown itself */}
               <div dangerouslySetInnerHTML={{ __html: html }} />
 
               {/* Footer */}
