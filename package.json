@@ -1,6 +1,6 @@
 {
-  "name": "fill3d-calc",
-  "version": "0.1.0",
+  "name": "fill3d-wiki",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,15 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@types/three": "^0.183.1",
-    "jspdf": "^4.2.1",
-    "jspdf-autotable": "^5.0.7",
-    "jszip": "^3.10.1",
     "next": "16.2.1",
     "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "three": "^0.183.2",
-    "xlsx": "^0.18.5"
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
