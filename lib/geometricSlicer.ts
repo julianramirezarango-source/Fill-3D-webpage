@@ -179,11 +179,11 @@ export function geometricSlice(buffer: ArrayBuffer, input: SliceInput): SliceRes
   //    (OrcaSlicer default: 4 top + 4 bottom layers). These layers account for
   //    ~40-50 % of material in thin-walled organic models (e.g. the Benchy).
   //
-  //    Rule:
-  //      • Downward-facing face (nz < 0, a "ceiling") → the N layers just BELOW
-  //        that face are top-solid layers (last layers printed before the ceiling).
-  //      • Upward-facing face (nz > 0, a "floor") → the N layers just ABOVE that
-  //        face are bottom-solid layers (first layers printed above the floor).
+  //    Rule (outward normals from a watertight mesh):
+  //      • Downward-facing face (nz < 0): model material is ABOVE this face.
+  //        → fill the N layers just ABOVE triZMin (bottom solid layers entering the model).
+  //      • Upward-facing face (nz > 0): model material is BELOW this face.
+  //        → fill the N layers just BELOW triZMax (top solid layers capping the model).
   //    Only near-horizontal faces (|nz| > 0.5) matter; near-vertical walls do not
   //    produce top/bottom solid layers.
   const layerCount = Math.ceil(height / layerHeight)
@@ -201,15 +201,17 @@ export function geometricSlice(buffer: ArrayBuffer, input: SliceInput): SliceRes
     if (Math.abs(nz) < 0.5) continue  // near-vertical — no solid layers
 
     if (nz < 0) {
-      // Downward face (ceiling): top-solid layers are the N layers just below zMin
-      const refLayer = Math.floor(triZMin[ti] / layerHeight)
-      const lo = Math.max(0, refLayer - SOLID_N + 1)
-      for (let li = lo; li <= refLayer && li < layerCount; li++) solidLayerFlags[li] = 1
-    } else {
-      // Upward face (floor): bottom-solid layers are the N layers just above zMax
-      const refLayer = Math.ceil(triZMax[ti] / layerHeight)
+      // Downward face: outward normal points DOWN → model material is ABOVE this face.
+      // Bottom solid layers: the first SOLID_N layers printed into the model above this face.
+      const refLayer = Math.ceil(triZMin[ti] / layerHeight)
       const hi = Math.min(layerCount - 1, refLayer + SOLID_N - 1)
       for (let li = refLayer; li <= hi; li++) solidLayerFlags[li] = 1
+    } else {
+      // Upward face: outward normal points UP → model material is BELOW this face.
+      // Top solid layers: the last SOLID_N layers printed before reaching this face.
+      const refLayer = Math.min(layerCount - 1, Math.floor(triZMax[ti] / layerHeight))
+      const lo = Math.max(0, refLayer - SOLID_N + 1)
+      for (let li = lo; li <= refLayer; li++) solidLayerFlags[li] = 1
     }
   }
 
