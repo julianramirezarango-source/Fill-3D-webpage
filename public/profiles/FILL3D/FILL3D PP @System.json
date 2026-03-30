@@ -1,0 +1,20 @@
+{
+    "type": "filament",
+    "name": "FILL3D PP @System",
+    "from": "system",
+    "setting_id": "FILL3D04S",
+    "filament_id": "FILL3D04",
+    "instantiation": "true",
+    "inherits": "FILL3D PP @base",
+    "filament_settings_id": "FILL3D PP @System",
+    "filament_vendor": [
+        "FILL3D"
+    ],
+    "filament_type": [
+        "PP"
+    ],
+    "filament_max_volumetric_speed": [
+        "14"
+    ],
+    "compatible_printers": []
+}

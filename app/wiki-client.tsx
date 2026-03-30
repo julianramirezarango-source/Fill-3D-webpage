@@ -351,7 +351,7 @@ function WikiHome({
 
 // ─── Filament profiles page ───────────────────────────────────────────────────
 
-const PROFILES_REPO = 'https://raw.githubusercontent.com/Ju4n5e/fill3d-orca-profiles/master'
+const PROFILES_REPO = '/wiki/profiles'
 
 const FILAMENTS = [
   {
@@ -483,7 +483,7 @@ function FilamentProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
             <p className="text-sm text-gray-500 leading-relaxed mb-3">{f.description}</p>
             <p className="text-xs text-gray-400 font-mono mb-4">{f.specs}</p>
             <button
-              onClick={() => downloadFile(`${PROFILES_REPO}/filament/FILL3D/${encodeURIComponent(f.file)}`, f.file)}
+              onClick={() => downloadFile(`${PROFILES_REPO}/FILL3D/${encodeURIComponent(f.file)}`, f.file)}
               disabled={!!downloading}
               className="inline-flex items-center gap-2 text-sm font-semibold text-[#753CFF] hover:text-[#5A2ED9] border border-[#E4D5FF] hover:border-[#753CFF] disabled:opacity-60 px-4 py-2 rounded-xl transition-colors cursor-pointer"
             >
