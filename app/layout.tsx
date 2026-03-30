@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   description:
     "Calcula el precio estimado de tu pieza en 3D. Sube tu archivo STL o 3MF y obtén una cotización al instante. Fill-3D Colombia.",
   keywords: ["impresión 3D", "calculadora", "precio", "STL", "Colombia", "PLA", "PETG"],
+  icons: {
+    icon: "/wiki/calculadora/logo.svg",
+    shortcut: "/wiki/calculadora/logo.svg",
+    apple: "/wiki/calculadora/logo.svg",
+  },
 };
 
 export default function RootLayout({
