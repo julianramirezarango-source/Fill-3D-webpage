@@ -405,6 +405,25 @@ const FILAMENTS = [
 ]
 
 function FilamentProfilesPage({ onNavigate }: { onNavigate: (path: string) => void }) {
+  const [downloading, setDownloading] = useState<string | null>(null)
+
+  async function downloadFile(url: string, filename: string) {
+    setDownloading(filename)
+    try {
+      const res = await fetch(url)
+      const blob = await res.blob()
+      const objUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = objUrl
+      a.download = filename
+      a.click()
+      URL.revokeObjectURL(objUrl)
+    } catch {
+      alert('Error al descargar el archivo. Intenta de nuevo.')
+    } finally {
+      setDownloading(null)
+    }
+  }
   return (
     <div className="max-w-3xl">
       {/* Breadcrumb */}
@@ -441,16 +460,16 @@ function FilamentProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
           <p className="font-semibold text-gray-800 mb-1">Descargar biblioteca completa</p>
           <p className="text-sm text-gray-500">Todos los perfiles en un solo archivo <code className="bg-white text-[#753CFF] px-1.5 py-0.5 rounded text-xs font-mono">OrcaFilamentLibrary.json</code></p>
         </div>
-        <a
-          href={`${PROFILES_REPO}/OrcaFilamentLibrary.json`}
-          download="OrcaFilamentLibrary.json"
-          className="shrink-0 inline-flex items-center gap-2 bg-[#753CFF] hover:bg-[#5A2ED9] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+        <button
+          onClick={() => downloadFile(`${PROFILES_REPO}/OrcaFilamentLibrary.json`, 'OrcaFilamentLibrary.json')}
+          disabled={!!downloading}
+          className="shrink-0 inline-flex items-center gap-2 bg-[#753CFF] hover:bg-[#5A2ED9] disabled:opacity-60 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
-          Descargar todos
-        </a>
+          {downloading === 'OrcaFilamentLibrary.json' ? 'Descargando...' : 'Descargar todos'}
+        </button>
       </div>
 
       {/* Profile cards */}
@@ -463,16 +482,16 @@ function FilamentProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
             </div>
             <p className="text-sm text-gray-500 leading-relaxed mb-3">{f.description}</p>
             <p className="text-xs text-gray-400 font-mono mb-4">{f.specs}</p>
-            <a
-              href={`${PROFILES_REPO}/filament/FILL3D/${encodeURIComponent(f.file)}`}
-              download={f.file}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#753CFF] hover:text-[#5A2ED9] border border-[#E4D5FF] hover:border-[#753CFF] px-4 py-2 rounded-xl transition-colors"
+            <button
+              onClick={() => downloadFile(`${PROFILES_REPO}/filament/FILL3D/${encodeURIComponent(f.file)}`, f.file)}
+              disabled={!!downloading}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#753CFF] hover:text-[#5A2ED9] border border-[#E4D5FF] hover:border-[#753CFF] disabled:opacity-60 px-4 py-2 rounded-xl transition-colors cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
               </svg>
-              Descargar perfil
-            </a>
+              {downloading === f.file ? 'Descargando...' : 'Descargar perfil'}
+            </button>
           </div>
         ))}
       </div>
