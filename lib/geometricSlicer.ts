@@ -173,84 +173,85 @@ export function geometricSlice(buffer: ArrayBuffer, input: SliceInput): SliceRes
     triZMax[i] = Math.max(t.v0.z, t.v1.z, t.v2.z)
   }
 
-  // 5. Pre-pass: detect solid layers (top/bottom solid layers like OrcaSlicer)
+  // 5. Slice layer by layer — compute enclosed area and perimeter per layer.
   //
-  //    Real slicers fill the N layers nearest to every horizontal surface at 100 %
-  //    (OrcaSlicer default: 4 top + 4 bottom layers). These layers account for
-  //    ~40-50 % of material in thin-walled organic models (e.g. the Benchy).
-  //
-  //    Rule (outward normals from a watertight mesh):
-  //      • Downward-facing face (nz < 0): model material is ABOVE this face.
-  //        → fill the N layers just ABOVE triZMin (bottom solid layers entering the model).
-  //      • Upward-facing face (nz > 0): model material is BELOW this face.
-  //        → fill the N layers just BELOW triZMax (top solid layers capping the model).
-  //    Only near-horizontal faces (|nz| > 0.5) matter; near-vertical walls do not
-  //    produce top/bottom solid layers.
+  //    Key insight for hollow meshes (like the Benchy):
+  //    A hollow shell model has BOTH outer and inner surface triangles. At each layer,
+  //    the outer surface loops contribute positive signed area and the inner surface
+  //    loops contribute negative area, nearly cancelling to give the thin wall area.
+  //    But OrcaSlicer fills the ENCLOSED VOLUME (outer hull area), not just the wall
+  //    material. Using max(posArea, |negArea|) recovers the correct enclosed area.
   const layerCount = Math.ceil(height / layerHeight)
-  const SOLID_N = 4  // OrcaSlicer default top/bottom layer count
-  const solidLayerFlags = new Uint8Array(layerCount)  // 1 = fill at 100 %, 0 = sparse
-
-  for (let ti = 0; ti < tris.length; ti++) {
-    const t = tris[ti]
-    const ax = t.v1.x - t.v0.x, ay = t.v1.y - t.v0.y, az = t.v1.z - t.v0.z
-    const bx = t.v2.x - t.v0.x, by = t.v2.y - t.v0.y, bz = t.v2.z - t.v0.z
-    const cx = ay * bz - az * by, cy = az * bx - ax * bz, cz = ax * by - ay * bx
-    const lenSq = cx * cx + cy * cy + cz * cz
-    if (lenSq < 1e-24) continue
-    const nz = cz / Math.sqrt(lenSq)
-    if (Math.abs(nz) < 0.5) continue  // near-vertical — no solid layers
-
-    if (nz < 0) {
-      // Downward face: outward normal points DOWN → model material is ABOVE this face.
-      // Bottom solid layers: the first SOLID_N layers printed into the model above this face.
-      const refLayer = Math.ceil(triZMin[ti] / layerHeight)
-      const hi = Math.min(layerCount - 1, refLayer + SOLID_N - 1)
-      for (let li = refLayer; li <= hi; li++) solidLayerFlags[li] = 1
-    } else {
-      // Upward face: outward normal points UP → model material is BELOW this face.
-      // Top solid layers: the last SOLID_N layers printed before reaching this face.
-      const refLayer = Math.min(layerCount - 1, Math.floor(triZMax[ti] / layerHeight))
-      const lo = Math.max(0, refLayer - SOLID_N + 1)
-      for (let li = lo; li <= refLayer; li++) solidLayerFlags[li] = 1
-    }
-  }
-
-  // 6. Slice layer by layer — accumulate shell and infill volumes
-  let totalShellMm3  = 0
-  let totalInfillMm3 = 0
+  const layerEnclosed = new Float32Array(layerCount)  // enclosed area per layer (mm²)
+  const layerPerim    = new Float32Array(layerCount)  // total perimeter per layer (mm)
 
   for (let li = 0; li < layerCount; li++) {
     const z = (li + 0.5) * layerHeight // sample at mid-layer
-    let signedArea = 0
-    let perimeter  = 0
+    let posArea = 0, negArea = 0, perimeter = 0
 
     for (let ti = 0; ti < tris.length; ti++) {
-      // Fast Z-range reject
       if (triZMin[ti] >= z || triZMax[ti] <= z) continue
 
       const seg = intersectTri(tris[ti], z)
       if (!seg) continue
 
-      // Signed area contribution (divergence theorem):
-      // Σ (ax×by − bx×ay)/2 = total enclosed area with correct sign
-      signedArea += (seg.a.x * seg.b.y - seg.b.x * seg.a.y) * 0.5
+      const contrib = (seg.a.x * seg.b.y - seg.b.x * seg.a.y) * 0.5
+      if (contrib > 0) posArea += contrib; else negArea += contrib
 
       const dx = seg.b.x - seg.a.x
       const dy = seg.b.y - seg.a.y
       perimeter += Math.sqrt(dx * dx + dy * dy)
     }
 
-    const area = Math.abs(signedArea)
+    // For solid meshes: posArea ≫ negArea (or vice versa) → max ≈ net.
+    // For hollow meshes: pos ≈ |neg| → net ≈ 0 but max = outer hull area (correct).
+    layerEnclosed[li] = Math.max(posArea, Math.abs(negArea))
+    layerPerim[li]    = perimeter
+  }
+
+  // 6. Detect solid layers (top/bottom solid layers like OrcaSlicer).
+  //
+  //    A layer is filled solid (100 %) if any of the next/previous SOLID_N layers
+  //    has near-zero enclosed area — i.e. the model starts or ends within SOLID_N
+  //    layers. This correctly marks the first and last N layers, plus any internal
+  //    layer where a feature appears or disappears suddenly (>90 % area drop).
+  const SOLID_N = 4
+  const solidLayerFlags = new Uint8Array(layerCount)
+
+  for (let li = 0; li < layerCount; li++) {
+    const area = layerEnclosed[li]
+    if (area < 1e-3) continue  // empty layer
+
+    // Bottom solid: N layers above a near-empty region (start of solid region)
+    let isSolid = false
+    for (let n = 1; n <= SOLID_N && !isSolid; n++) {
+      const prev = li - n
+      if (prev < 0 || layerEnclosed[prev] < area * 0.1) isSolid = true
+    }
+    // Top solid: N layers below a near-empty region (end of solid region)
+    for (let n = 1; n <= SOLID_N && !isSolid; n++) {
+      const nxt = li + n
+      if (nxt >= layerCount || layerEnclosed[nxt] < area * 0.1) isSolid = true
+    }
+    if (isSolid) solidLayerFlags[li] = 1
+  }
+
+  // 7. Accumulate shell and infill volumes from stored per-layer data.
+  let totalShellMm3  = 0
+  let totalInfillMm3 = 0
+
+  for (let li = 0; li < layerCount; li++) {
+    const area      = layerEnclosed[li]
+    const perimeter = layerPerim[li]
     const shellArea = Math.min(area, perimeter * perimeters * lineWidth)
     const coreArea  = Math.max(0, area - shellArea)
 
     totalShellMm3  += shellArea * layerHeight
-    // Solid layers (top/bottom) fill at 100 %; sparse layers fill at infill %
     const fillRate = solidLayerFlags[li] ? 1.0 : (infill / 100)
     totalInfillMm3 += coreArea * fillRate * layerHeight
   }
 
-  // 7. Support material — per-face overhang detection (same criterion as OrcaSlicer/PrusaSlicer)
+  // 8. Support material — per-face overhang detection (same criterion as OrcaSlicer/PrusaSlicer)
   //
   //    A face needs support when its outward normal points more than 45° below horizontal,
   //    i.e. normalZ < -cos(45°) ≈ -0.707. Because we already rotated every vertex in step 2,
@@ -297,7 +298,7 @@ export function geometricSlice(buffer: ArrayBuffer, input: SliceInput): SliceRes
     }
   }
 
-  // 9. Mass calculation
+  // 9. Mass + time calculation
   const shellGrams   = (totalShellMm3   / 1000) * material.density
   const infillGrams  = (totalInfillMm3  / 1000) * material.density
   const supportGrams = (supportMm3       / 1000) * material.density

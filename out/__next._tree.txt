@@ -1,2 +1,2 @@
 :HL["/wiki/calculadora/_next/static/chunks/0twt~q3nts-iz.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"Wy0yqaNIPkQfcbOtlminH"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"53TRzIfBVrMojVWhlnqyt"}
