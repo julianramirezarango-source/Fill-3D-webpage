@@ -1,0 +1,128 @@
+import type { SliceResult } from '@/lib/slicerEstimate'
+
+function formatHours(h: number): string {
+  const hh = Math.floor(h)
+  const mm = Math.round((h - hh) * 60)
+  if (hh === 0) return `${mm} min`
+  if (mm === 0) return `${hh} h`
+  return `${hh} h ${mm} min`
+}
+
+interface Props {
+  mode: 'estimate' | 'manual'
+  estimate: SliceResult | null
+  manualGrams: string
+  manualHours: string
+  slicing?: boolean
+  hasBuffer?: boolean
+  onMode: (m: 'estimate' | 'manual') => void
+  onManualGrams: (v: string) => void
+  onManualHours: (v: string) => void
+}
+
+export function SlicerSection({
+  mode, estimate, manualGrams, manualHours, slicing, hasBuffer,
+  onMode, onManualGrams, onManualHours,
+}: Props) {
+  return (
+    <div className="space-y-4">
+      {/* Toggle */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => onMode('estimate')}
+          className={`flex-1 py-2 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer
+            ${mode === 'estimate'
+              ? 'border-[#5E33D9] bg-[#f5f3ff] text-[#4F25C6]'
+              : 'border-gray-200 text-gray-600 hover:border-[#c4b5fd]'
+            }`}
+        >
+          Usar estimador
+        </button>
+        <button
+          onClick={() => onMode('manual')}
+          className={`flex-1 py-2 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer
+            ${mode === 'manual'
+              ? 'border-[#5E33D9] bg-[#f5f3ff] text-[#4F25C6]'
+              : 'border-gray-200 text-gray-600 hover:border-[#c4b5fd]'
+            }`}
+        >
+          Ingresar manualmente
+        </button>
+      </div>
+
+      {mode === 'estimate' && slicing && (
+        <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-3">
+          <svg className="animate-spin h-5 w-5 text-[#5E33D9]" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+          </svg>
+          <span className="text-sm text-gray-500">Calculando geometría de capas...</span>
+        </div>
+      )}
+
+      {mode === 'estimate' && !slicing && estimate && (
+        <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+          <p className="text-xs text-gray-400 italic">
+            {hasBuffer ? 'Slicer geométrico — intersección capa por capa (como OrcaSlicer)' : 'Estimación matemática basada en geometría del modelo'}
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
+              <p className="text-2xl font-bold text-[#5E33D9]">{estimate.totalGrams.toFixed(1)} g</p>
+              <p className="text-xs text-gray-500 mt-1">Filamento total</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
+              <p className="text-2xl font-bold text-[#5E33D9]">{formatHours(estimate.printHours)}</p>
+              <p className="text-xs text-gray-500 mt-1">Tiempo de impresión</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 text-center">
+            <div>
+              <span className="font-medium text-gray-700">{estimate.shellGrams.toFixed(1)} g</span>
+              <br />Paredes
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">{estimate.infillGrams.toFixed(1)} g</span>
+              <br />Relleno
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">{estimate.supportGrams.toFixed(1)} g</span>
+              <br />Soportes
+            </div>
+          </div>
+        </div>
+      )}
+
+      {mode === 'manual' && (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-500">Ingresa los valores exactos de tu slicer (OrcaSlicer, Cura, etc.)</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Gramos de filamento</label>
+              <div className="relative">
+                <input
+                  type="number" min={0} step={0.1} value={manualGrams}
+                  onChange={e => onManualGrams(e.target.value)}
+                  placeholder="45.3"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 pr-8 focus:outline-none focus:ring-2 focus:ring-[#5E33D9]"
+                />
+                <span className="absolute right-3 top-2 text-xs text-gray-400">g</span>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Tiempo de impresión (horas)</label>
+              <div className="relative">
+                <input
+                  type="number" min={0} step={0.1} value={manualHours}
+                  onChange={e => onManualHours(e.target.value)}
+                  placeholder="2.5"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 pr-8 focus:outline-none focus:ring-2 focus:ring-[#5E33D9]"
+                />
+                <span className="absolute right-3 top-2 text-xs text-gray-400">h</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
