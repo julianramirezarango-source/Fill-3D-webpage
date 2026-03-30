@@ -351,7 +351,7 @@ function WikiHome({
 
 // ─── Filament profiles page ───────────────────────────────────────────────────
 
-const PROFILES_REPO = 'https://github.com/Ju4n5e/fill3d-orca-profiles/raw/master'
+const PROFILES_REPO = 'https://raw.githubusercontent.com/Ju4n5e/fill3d-orca-profiles/master'
 
 const FILAMENTS = [
   {
