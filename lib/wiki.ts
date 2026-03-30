@@ -134,11 +134,11 @@ function inlineMd(text: string, filePath: string): string {
       `<img src="${resolveImg(src, filePath)}" alt="${esc(alt)}" loading="lazy" class="max-w-full rounded-xl my-4" />`)
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, t, href) => {
       const ext = /^https?:\/\//.test(href)
-      return `<a href="${esc(href)}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ''} class="text-[#0D9488] underline underline-offset-2 hover:text-[#0F766E] transition-colors">${esc(t)}</a>`
+      return `<a href="${esc(href)}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ''} class="text-[#753CFF] underline underline-offset-2 hover:text-[#5A2ED9] transition-colors">${esc(t)}</a>`
     })
     .replace(/\*\*([^*\n]+)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
     .replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
-    .replace(/`([^`\n]+)`/g, '<code class="bg-[#F0FDFA] text-[#0D9488] px-1.5 py-0.5 rounded text-[0.85em] font-mono">$1</code>')
+    .replace(/`([^`\n]+)`/g, '<code class="bg-[#F3EEFF] text-[#753CFF] px-1.5 py-0.5 rounded text-[0.85em] font-mono">$1</code>')
 }
 
 function renderTable(rows: string[], filePath: string): string {
@@ -197,7 +197,7 @@ export function parseMarkdown(markdown: string, filePath = ''): string {
     if (line.startsWith('>')) {
       const ql: string[] = []
       while (i < lines.length && lines[i].startsWith('>')) { ql.push(lines[i].slice(1).trim()); i++ }
-      out.push(`<blockquote class="border-l-4 border-[#0D9488] bg-[#F0FDFA] rounded-r-xl px-4 py-3 my-4 text-gray-700">${inlineMd(ql.join(' '), filePath)}</blockquote>`)
+      out.push(`<blockquote class="border-l-4 border-[#753CFF] bg-[#F3EEFF] rounded-r-xl px-4 py-3 my-4 text-gray-700">${inlineMd(ql.join(' '), filePath)}</blockquote>`)
       continue
     }
 

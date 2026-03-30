@@ -7,10 +7,10 @@ import {
 } from '@/lib/wiki'
 
 // ─── Brand teal ──────────────────────────────────────────────────────────────
-// #0D9488  primary
-// #0F766E  dark hover
-// #F0FDFA  light bg
-// #CCFBF1  medium bg
+// #753CFF  primary
+// #5A2ED9  dark hover
+// #F3EEFF  light bg
+// #E4D5FF  medium bg
 
 // ─── Nav icons ────────────────────────────────────────────────────────────────
 
@@ -106,7 +106,7 @@ function SidebarItem({
   }, [currentPath, item.children])
 
   // icon color — triangle warning gets amber
-  const iconColor = item.icon === 'triangle' ? 'text-amber-500' : 'text-[#0D9488]'
+  const iconColor = item.icon === 'triangle' ? 'text-amber-500' : 'text-[#753CFF]'
 
   if (item.children) {
     return (
@@ -148,10 +148,10 @@ function SidebarItem({
         onClick={() => item.path && onNavigate(item.path)}
         className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer
           ${isActive
-            ? 'bg-[#F0FDFA] text-[#0D9488] font-medium'
+            ? 'bg-[#F3EEFF] text-[#753CFF] font-medium'
             : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}
       >
-        <NavIcon type={item.icon} className={isActive ? 'text-[#0D9488]' : iconColor} />
+        <NavIcon type={item.icon} className={isActive ? 'text-[#753CFF]' : iconColor} />
         <span className="flex-1 text-left leading-snug">{item.label}</span>
         <svg
           className="w-3.5 h-3.5 text-gray-200 shrink-0"
@@ -262,17 +262,17 @@ function WikiHome({
 
   const CARD_ICONS: Record<string, React.ReactNode> = {
     'Lo básico': (
-      <svg className="w-10 h-10 text-[#0D9488]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <svg className="w-10 h-10 text-[#753CFF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
       </svg>
     ),
     'Consejos de impresión': (
-      <svg className="w-10 h-10 text-[#0D9488]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <svg className="w-10 h-10 text-[#753CFF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
       </svg>
     ),
     'Glosario': (
-      <svg className="w-10 h-10 text-[#0D9488]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <svg className="w-10 h-10 text-[#753CFF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
       </svg>
     ),
@@ -283,10 +283,10 @@ function WikiHome({
       {/* Hero */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-3">
-          <svg className="w-5 h-5 text-[#0D9488]" fill="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-[#753CFF]" fill="currentColor" viewBox="0 0 24 24">
             <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
           </svg>
-          <span className="text-sm font-semibold text-[#0D9488]">Wiki Fill-3D</span>
+          <span className="text-sm font-semibold text-[#753CFF]">Wiki Fill-3D</span>
         </div>
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Wiki Fill-3D</h1>
         <p className="text-base text-gray-500 leading-relaxed max-w-xl">
@@ -300,7 +300,7 @@ function WikiHome({
       {/* FAQ */}
       <section className="mb-8">
         <div className="flex items-center gap-2.5 mb-4">
-          <svg className="w-4 h-4 text-[#0D9488]" viewBox="0 0 16 16" fill="currentColor">
+          <svg className="w-4 h-4 text-[#753CFF]" viewBox="0 0 16 16" fill="currentColor">
             <circle cx="8" cy="8" r="7" />
           </svg>
           <h2 className="text-base font-semibold text-gray-800">Preguntas frecuentes</h2>
@@ -313,7 +313,7 @@ function WikiHome({
       {/* Empieza aquí */}
       <section>
         <div className="flex items-center gap-2.5 mb-5">
-          <svg className="w-4 h-4 text-[#0D9488]" fill="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-[#753CFF]" fill="currentColor" viewBox="0 0 24 24">
             <path fillRule="evenodd" d="M14.615 1.595a.75.75 0 01.359.852L12.982 9.75h7.268a.75.75 0 01.548 1.262l-10.5 11.25a.75.75 0 01-1.272-.71l1.992-7.302H3.268a.75.75 0 01-.548-1.262l10.5-11.25a.75.75 0 01.913-.143z" clipRule="evenodd" />
           </svg>
           <h2 className="text-base font-semibold text-gray-800">Empieza aquí</h2>
@@ -325,10 +325,10 @@ function WikiHome({
               <button
                 key={group.label}
                 onClick={() => first && onNavigate(first)}
-                className="text-left bg-[#F0FDFA] hover:bg-[#CCFBF1] border border-[#CCFBF1] hover:border-[#99F6E4] rounded-2xl p-5 transition-all cursor-pointer group"
+                className="text-left bg-[#F3EEFF] hover:bg-[#E4D5FF] border border-[#E4D5FF] hover:border-[#C4B5FD] rounded-2xl p-5 transition-all cursor-pointer group"
               >
-                <div className="mb-4">{CARD_ICONS[group.label] ?? <NavIcon type="circle" className="w-10 h-10 text-[#0D9488]" />}</div>
-                <h3 className="font-semibold text-gray-800 text-sm mb-1 group-hover:text-[#0D9488] transition-colors">
+                <div className="mb-4">{CARD_ICONS[group.label] ?? <NavIcon type="circle" className="w-10 h-10 text-[#753CFF]" />}</div>
+                <h3 className="font-semibold text-gray-800 text-sm mb-1 group-hover:text-[#753CFF] transition-colors">
                   {group.label}
                 </h3>
                 <p className="text-xs text-gray-400">
@@ -446,8 +446,8 @@ export default function WikiClient() {
           onClick={() => { window.location.hash = ''; setSidebarOpen(false); window.scrollTo({ top: 0 }) }}
           className="flex items-center gap-2 cursor-pointer shrink-0"
         >
-          <span className="font-bold text-gray-900 text-lg tracking-tight">Fill -3D</span>
-          <span className="text-[9px] font-bold bg-[#0D9488] text-white px-1.5 py-[3px] rounded uppercase tracking-widest">
+          <img src="/wiki/logo.svg" alt="Fill-3D" style={{ height: '28px' }} />
+          <span className="text-[9px] font-bold bg-[#753CFF] text-white px-1.5 py-[3px] rounded uppercase tracking-widest">
             Wiki
           </span>
         </button>
@@ -496,7 +496,7 @@ export default function WikiClient() {
             href="https://wa.me/573147458472"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-semibold text-white bg-[#0D9488] hover:bg-[#0F766E] px-4 py-1.5 rounded-xl transition-colors ml-1"
+            className="text-sm font-semibold text-white bg-[#753CFF] hover:bg-[#5A2ED9] px-4 py-1.5 rounded-xl transition-colors ml-1"
           >
             Pedir →
           </a>
@@ -533,7 +533,7 @@ export default function WikiClient() {
                 <nav className="flex items-center flex-wrap gap-1 text-xs text-gray-400 mb-6">
                   <button
                     onClick={() => { window.location.hash = ''; window.scrollTo({ top: 0 }) }}
-                    className="hover:text-[#0D9488] transition-colors cursor-pointer"
+                    className="hover:text-[#753CFF] transition-colors cursor-pointer"
                   >
                     Inicio
                   </button>
@@ -565,7 +565,7 @@ export default function WikiClient() {
                   href="https://wa.me/573147458472"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#0D9488] hover:text-[#0F766E] font-medium transition-colors"
+                  className="text-[#753CFF] hover:text-[#5A2ED9] font-medium transition-colors"
                 >
                   ¿Dudas? WhatsApp →
                 </a>
