@@ -80,6 +80,12 @@ function NavIcon({ type, className = '' }: { type?: IconType; className?: string
           <path d="M1 4a1 1 0 011-1h4l2 2h6a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1V4z" />
         </svg>
       )
+    case 'download':
+      return (
+        <svg className={base} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 2v8M5 7l3 3 3-3M2 12h12" />
+        </svg>
+      )
     default:
       return <svg className={base} viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="3" /></svg>
   }
@@ -343,6 +349,206 @@ function WikiHome({
   )
 }
 
+// ─── Filament profiles page ───────────────────────────────────────────────────
+
+const PROFILES_REPO = 'https://github.com/Ju4n5e/fill3d-orca-profiles/raw/master'
+
+const FILAMENTS = [
+  {
+    id: 'pla-basic',
+    name: 'PLA Basic',
+    file: 'FILL3D PLA Basic @System.json',
+    color: '#4CAF50',
+    description: 'Filamento estándar de ácido poliláctico. Fácil de imprimir, baja deformación y buena adhesión entre capas. Ideal para prototipos, piezas decorativas y proyectos generales.',
+    specs: 'Temp. boquilla: 210–230 °C · Cama: 50–60 °C',
+  },
+  {
+    id: 'pla-turbo',
+    name: 'PLA Turbo',
+    file: 'FILL3D PLA Turbo @System.json',
+    color: '#753CFF',
+    description: 'PLA de alto rendimiento fabricado en Colombia por Fill-3D. Formulado para impresión a alta velocidad (hasta 350 mm/s) con mayor resistencia mecánica y acabado premium.',
+    specs: 'Temp. boquilla: 220–240 °C · Cama: 55–65 °C',
+  },
+  {
+    id: 'petg',
+    name: 'PETG',
+    file: 'FILL3D PETG @System.json',
+    color: '#2196F3',
+    description: 'Tereftalato de polietileno con glicol. Combina la facilidad de impresión del PLA con mayor resistencia mecánica y química. Buena transparencia y flexibilidad moderada.',
+    specs: 'Temp. boquilla: 230–250 °C · Cama: 70–85 °C',
+  },
+  {
+    id: 'pp',
+    name: 'PP',
+    file: 'FILL3D PP @System.json',
+    color: '#FF9800',
+    description: 'Polipropileno. Material muy ligero, altamente resistente a químicos y a la fatiga por flexión. Ideal para bisagras vivas, contenedores y piezas de uso industrial.',
+    specs: 'Temp. boquilla: 220–240 °C · Cama: 85–100 °C',
+  },
+  {
+    id: 'ppcf',
+    name: 'PP-CF',
+    file: 'FILL3D PPCF @System.json',
+    color: '#333333',
+    description: 'Polipropileno reforzado con fibra de carbono. Mayor rigidez, resistencia térmica y estabilidad dimensional que el PP estándar. Requiere boquilla endurecida.',
+    specs: 'Temp. boquilla: 230–250 °C · Cama: 90–105 °C · Boquilla: acero endurecido',
+  },
+  {
+    id: 'pa',
+    name: 'PA / Nylon',
+    file: 'FILL3D PA @System.json',
+    color: '#E91E63',
+    description: 'Poliamida de alta performance. Excelente resistencia mecánica, al desgaste y al impacto. Ideal para engranajes, rodamientos y piezas funcionales sometidas a estrés continuo.',
+    specs: 'Temp. boquilla: 240–260 °C · Cama: 70–90 °C · Secar antes de usar',
+  },
+]
+
+function FilamentProfilesPage({ onNavigate }: { onNavigate: (path: string) => void }) {
+  return (
+    <div className="max-w-3xl">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1 text-xs text-gray-400 mb-6">
+        <button
+          onClick={() => { window.location.hash = ''; window.scrollTo({ top: 0 }) }}
+          className="hover:text-[#753CFF] transition-colors cursor-pointer"
+        >
+          Inicio
+        </button>
+        <span>›</span>
+        <span>Lo básico</span>
+        <span>›</span>
+        <span className="text-gray-600">Perfiles OrcaSlicer</span>
+      </nav>
+
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-3">
+          <svg className="w-5 h-5 text-[#753CFF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+          <span className="text-sm font-semibold text-[#753CFF]">Perfiles de filamento</span>
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-3">Perfiles OrcaSlicer Fill-3D</h1>
+        <p className="text-gray-500 leading-relaxed">
+          Perfiles de filamento oficiales de Fill-3D para OrcaSlicer. Parámetros validados en producción real con filamento fabricado en nuestra planta en Bogotá, Colombia.
+        </p>
+      </div>
+
+      {/* Download all */}
+      <div className="bg-[#F3EEFF] border border-[#E4D5FF] rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <p className="font-semibold text-gray-800 mb-1">Descargar biblioteca completa</p>
+          <p className="text-sm text-gray-500">Todos los perfiles en un solo archivo <code className="bg-white text-[#753CFF] px-1.5 py-0.5 rounded text-xs font-mono">OrcaFilamentLibrary.json</code></p>
+        </div>
+        <a
+          href={`${PROFILES_REPO}/OrcaFilamentLibrary.json`}
+          download="OrcaFilamentLibrary.json"
+          className="shrink-0 inline-flex items-center gap-2 bg-[#753CFF] hover:bg-[#5A2ED9] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+          Descargar todos
+        </a>
+      </div>
+
+      {/* Profile cards */}
+      <div className="grid sm:grid-cols-2 gap-4 mb-10">
+        {FILAMENTS.map(f => (
+          <div key={f.id} className="border border-gray-100 rounded-2xl p-5 hover:border-[#E4D5FF] hover:shadow-sm transition-all">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: f.color }} />
+              <h3 className="font-bold text-gray-900">{f.name}</h3>
+            </div>
+            <p className="text-sm text-gray-500 leading-relaxed mb-3">{f.description}</p>
+            <p className="text-xs text-gray-400 font-mono mb-4">{f.specs}</p>
+            <a
+              href={`${PROFILES_REPO}/filament/FILL3D/${encodeURIComponent(f.file)}`}
+              download={f.file}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#753CFF] hover:text-[#5A2ED9] border border-[#E4D5FF] hover:border-[#753CFF] px-4 py-2 rounded-xl transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Descargar perfil
+            </a>
+          </div>
+        ))}
+      </div>
+
+      <hr className="border-gray-100 mb-8" />
+
+      {/* How to import */}
+      <section className="mb-10">
+        <h2 className="text-xl font-bold text-gray-800 mb-5">Cómo importar el perfil en OrcaSlicer</h2>
+        <div className="space-y-4">
+          {[
+            {
+              step: '1',
+              title: 'Descarga el archivo',
+              desc: 'Haz clic en "Descargar perfil" del material que usas. Se descargará un archivo .json a tu computador.',
+            },
+            {
+              step: '2',
+              title: 'Abre OrcaSlicer',
+              desc: 'Inicia OrcaSlicer. Asegúrate de tener la versión 1.9 o superior para compatibilidad completa.',
+            },
+            {
+              step: '3',
+              title: 'Importa el perfil',
+              desc: 'En el menú superior ve a Archivo → Importar → Importar configuraciones. Selecciona el archivo .json descargado.',
+            },
+            {
+              step: '4',
+              title: 'Selecciona el filamento',
+              desc: 'En el panel de filamento (columna derecha), abre el desplegable y busca "FILL3D". Selecciona el perfil importado.',
+            },
+            {
+              step: '5',
+              title: 'Ajusta si es necesario',
+              desc: 'Los perfiles están optimizados para filamento Fill-3D original. Si usas condiciones distintas (altitud, humedad), ajusta ±5 °C en temperatura de boquilla.',
+            },
+          ].map(({ step, title, desc }) => (
+            <div key={step} className="flex gap-4">
+              <div className="shrink-0 w-8 h-8 rounded-full bg-[#F3EEFF] text-[#753CFF] text-sm font-bold flex items-center justify-center">
+                {step}
+              </div>
+              <div className="pt-1">
+                <p className="font-semibold text-gray-800 text-sm mb-1">{title}</p>
+                <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <div className="pt-6 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-400">
+        <span>
+          Perfiles desde{' '}
+          <a
+            href="https://github.com/Ju4n5e/fill3d-orca-profiles"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-gray-600 transition-colors"
+          >
+            fill3d-orca-profiles
+          </a>
+        </span>
+        <a
+          href="https://wa.me/573147458472"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#753CFF] hover:text-[#5A2ED9] font-medium transition-colors"
+        >
+          ¿Dudas? WhatsApp →
+        </a>
+      </div>
+    </div>
+  )
+}
+
 // ─── Article skeleton ─────────────────────────────────────────────────────────
 
 function Skeleton() {
@@ -386,7 +592,7 @@ export default function WikiClient() {
   }, [])
 
   useEffect(() => {
-    if (!currentPath) { setHtml(''); setTitle(''); return }
+    if (!currentPath || currentPath === '__perfiles-filamento__') { setHtml(''); setTitle(''); setLoading(false); return }
     setLoading(true)
     fetchArticle(currentPath).then(md => {
       if (md) {
@@ -524,6 +730,8 @@ export default function WikiClient() {
         <main className="flex-1 min-w-0 px-6 py-10 lg:px-16">
           {!currentPath ? (
             <WikiHome nav={nav} onNavigate={navigate} />
+          ) : currentPath === '__perfiles-filamento__' ? (
+            <FilamentProfilesPage onNavigate={navigate} />
           ) : loading ? (
             <Skeleton />
           ) : (
