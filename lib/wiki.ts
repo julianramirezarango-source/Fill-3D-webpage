@@ -7,7 +7,7 @@ export const REPO_RAW = 'https://raw.githubusercontent.com/Ju4n5e/fill3d-wiki-co
 
 export type IconType =
   | 'play' | 'circle' | 'square' | 'loader' | 'triangle'
-  | 'pencil' | 'dot' | 'box' | 'book' | 'folder'
+  | 'pencil' | 'dot' | 'box' | 'book' | 'folder' | 'download'
 
 export interface NavItem {
   label: string
@@ -58,6 +58,7 @@ export const DEFAULT_NAV: NavGroup[] = [
           { label: 'Accesorios y repuestos',path: 'lo-basico/mantenimiento/accesorios-y-repuestos.md',icon: 'dot' },
         ],
       },
+      { label: 'Perfiles OrcaSlicer', path: '__perfiles-filamento__', icon: 'download' },
     ],
   },
   {
