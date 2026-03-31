@@ -699,7 +699,16 @@ function CrealityProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
 
       {/* How to import */}
       <section className="mb-10">
-        <h2 className="text-xl font-bold text-gray-800 mb-5">Cómo importar el perfil en Creality Print</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Cómo importar el perfil en Creality Print</h2>
+
+        {/* Warning */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5 flex gap-3 text-sm text-amber-800">
+          <svg className="w-5 h-5 shrink-0 mt-0.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+          <span><strong>Importante:</strong> debes tener la impresora correspondiente ya añadida en Creality Print antes de importar. Si no hay impresora compatible, aparecerá "0 configuraciones importadas".</span>
+        </div>
+
         <div className="space-y-4">
           {[
             {
@@ -709,23 +718,13 @@ function CrealityProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
             },
             {
               step: '2',
-              title: 'Abre Creality Print',
-              desc: 'Inicia Creality Print. Asegúrate de tener la versión 5.x o superior.',
+              title: 'Añade tu impresora primero',
+              desc: 'En Creality Print, ve a Configuración → Impresora y asegúrate de tener añadida la impresora compatible con el perfil que vas a importar.',
             },
             {
               step: '3',
               title: 'Importa el perfil',
-              desc: 'Ve a Configuración → Filamento → haz clic en el ícono de importar (⬇). Selecciona el archivo .json descargado.',
-            },
-            {
-              step: '4',
-              title: 'Selecciona el filamento',
-              desc: 'En el panel lateral derecho, abre el selector de filamento y busca "FILL3D". Selecciona el perfil importado.',
-            },
-            {
-              step: '5',
-              title: 'Ajusta si es necesario',
-              desc: 'Los perfiles están optimizados para filamento Fill-3D original. Para condiciones distintas (altitud, humedad), ajusta ±5 °C en la temperatura de boquilla.',
+              desc: 'Ve a Archivo → Importar → Importar configuraciones. Selecciona el archivo .json descargado. El perfil Fill-3D aparecerá en tu lista de filamentos.',
             },
           ].map(({ step, title, desc }) => (
             <div key={step} className="flex gap-4">

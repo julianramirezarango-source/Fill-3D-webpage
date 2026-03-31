@@ -1,2 +1,2 @@
-:HL["/wiki/_next/static/chunks/0u56dc94kd.h1.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"e7ilbirvrY9Y_9IqJfZFh"}
+:HL["/wiki/_next/static/chunks/0r48vb_x5kh1l.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"iiDOY2S9r7S5qnKtgV0wd"}
