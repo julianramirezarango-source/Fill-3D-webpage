@@ -1,0 +1,16 @@
+{
+    "type": "filament",
+    "name": "FILL3D PETG",
+    "inherits": "FILL3D PETG @base",
+    "from": "system",
+    "setting_id": "GFF303",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Creality Hi 0.4 nozzle",
+        "Creality K1 0.4 nozzle",
+        "Creality K1C 0.4 nozzle",
+        "Creality K1 Max 0.4 nozzle",
+        "Creality K1 SE 0.4 nozzle",
+        "Creality Ender-3 V3 Plus 0.4 nozzle"
+    ]
+}

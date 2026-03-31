@@ -1,0 +1,102 @@
+{
+    "name": "FILL3D",
+    "version": "01.00.00.01",
+    "force_update": "0",
+    "description": "FILL3D filament profiles for Creality printers",
+    "machine_model_list": [],
+    "process_list": [],
+    "filament_list": [
+        {
+            "name": "fdm_filament_common",
+            "sub_path": "filament/fdm_filament_common.json"
+        },
+        {
+            "name": "fdm_filament_pla",
+            "sub_path": "filament/fdm_filament_pla.json"
+        },
+        {
+            "name": "fdm_filament_pet",
+            "sub_path": "filament/fdm_filament_pet.json"
+        },
+        {
+            "name": "fdm_filament_pp",
+            "sub_path": "filament/fdm_filament_pp.json"
+        },
+        {
+            "name": "fdm_filament_pa",
+            "sub_path": "filament/fdm_filament_pa.json"
+        },
+        {
+            "name": "FILL3D PLA Basic @base",
+            "sub_path": "filament/FILL3D PLA Basic @base.json"
+        },
+        {
+            "name": "FILL3D PLA Basic",
+            "sub_path": "filament/FILL3D PLA Basic.json"
+        },
+        {
+            "name": "FILL3D PLA Basic @Ender-3 V3",
+            "sub_path": "filament/FILL3D PLA Basic @Ender-3 V3.json"
+        },
+        {
+            "name": "FILL3D PLA Turbo @base",
+            "sub_path": "filament/FILL3D PLA Turbo @base.json"
+        },
+        {
+            "name": "FILL3D PLA Turbo",
+            "sub_path": "filament/FILL3D PLA Turbo.json"
+        },
+        {
+            "name": "FILL3D PLA Turbo @Ender-3 V3",
+            "sub_path": "filament/FILL3D PLA Turbo @Ender-3 V3.json"
+        },
+        {
+            "name": "FILL3D PETG @base",
+            "sub_path": "filament/FILL3D PETG @base.json"
+        },
+        {
+            "name": "FILL3D PETG",
+            "sub_path": "filament/FILL3D PETG.json"
+        },
+        {
+            "name": "FILL3D PETG @Ender-3 V3",
+            "sub_path": "filament/FILL3D PETG @Ender-3 V3.json"
+        },
+        {
+            "name": "FILL3D PP @base",
+            "sub_path": "filament/FILL3D PP @base.json"
+        },
+        {
+            "name": "FILL3D PP",
+            "sub_path": "filament/FILL3D PP.json"
+        },
+        {
+            "name": "FILL3D PP @Ender-3 V3",
+            "sub_path": "filament/FILL3D PP @Ender-3 V3.json"
+        },
+        {
+            "name": "FILL3D PPCF @base",
+            "sub_path": "filament/FILL3D PPCF @base.json"
+        },
+        {
+            "name": "FILL3D PPCF",
+            "sub_path": "filament/FILL3D PPCF.json"
+        },
+        {
+            "name": "FILL3D PPCF @Ender-3 V3",
+            "sub_path": "filament/FILL3D PPCF @Ender-3 V3.json"
+        },
+        {
+            "name": "FILL3D PA @base",
+            "sub_path": "filament/FILL3D PA @base.json"
+        },
+        {
+            "name": "FILL3D PA",
+            "sub_path": "filament/FILL3D PA.json"
+        },
+        {
+            "name": "FILL3D PA @Ender-3 V3",
+            "sub_path": "filament/FILL3D PA @Ender-3 V3.json"
+        }
+    ]
+}

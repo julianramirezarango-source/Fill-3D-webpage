@@ -1,0 +1,16 @@
+{
+    "type": "filament",
+    "name": "FILL3D PP @Ender-3 V3",
+    "inherits": "FILL3D PP @base",
+    "from": "system",
+    "setting_id": "GFF314",
+    "instantiation": "true",
+    "filament_max_volumetric_speed": [
+        "6"
+    ],
+    "compatible_printers": [
+        "Creality Ender-3 V3 0.4 nozzle",
+        "Creality Ender-3 V3 KE 0.4 nozzle",
+        "Creality Ender-3 V3 SE 0.4 nozzle"
+    ]
+}

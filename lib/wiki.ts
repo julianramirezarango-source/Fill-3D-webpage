@@ -59,6 +59,7 @@ export const DEFAULT_NAV: NavGroup[] = [
         ],
       },
       { label: 'Perfiles OrcaSlicer', path: '__perfiles-filamento__', icon: 'download' },
+      { label: 'Perfiles Creality Print', path: '__perfiles-creality__', icon: 'download' },
     ],
   },
   {
