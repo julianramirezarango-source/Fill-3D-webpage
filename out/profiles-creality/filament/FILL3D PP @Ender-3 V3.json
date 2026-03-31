@@ -2,7 +2,7 @@
     "type": "filament",
     "name": "FILL3D PP @Ender-3 V3",
     "inherits": "FILL3D PP @base",
-    "from": "system",
+    "from": "user",
     "setting_id": "GFF314",
     "instantiation": "true",
     "filament_max_volumetric_speed": [
