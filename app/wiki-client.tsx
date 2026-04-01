@@ -6,6 +6,27 @@ import {
   DEFAULT_NAV, fetchNav, fetchArticle, extractTitle, parseMarkdown,
 } from '@/lib/wiki'
 
+// ─── Cross-origin download helper ────────────────────────────────────────────
+
+async function downloadFile(url: string, filename: string) {
+  try {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const blob = await res.blob()
+    const objUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.style.cssText = 'display:none'
+    a.href = objUrl
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    setTimeout(() => URL.revokeObjectURL(objUrl), 5000)
+  } catch {
+    window.open(url, '_blank')
+  }
+}
+
 // ─── Brand teal ──────────────────────────────────────────────────────────────
 // #753CFF  primary
 // #5A2ED9  dark hover
@@ -351,7 +372,7 @@ function WikiHome({
 
 // ─── Filament profiles page ───────────────────────────────────────────────────
 
-const PROFILES_REPO = '/wiki/profiles'
+const PROFILES_REPO = 'https://raw.githubusercontent.com/Ju4n5e/fill3d-orca-profiles/master'
 
 const FILAMENTS = [
   {
@@ -441,16 +462,15 @@ function FilamentProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
           <p className="font-semibold text-gray-800 mb-1">Descargar biblioteca completa</p>
           <p className="text-sm text-gray-500">Todos los perfiles en un solo archivo <code className="bg-white text-[#753CFF] px-1.5 py-0.5 rounded text-xs font-mono">OrcaFilamentLibrary.json</code></p>
         </div>
-        <a
-          href={`${PROFILES_REPO}/OrcaFilamentLibrary.json`}
-          download="OrcaFilamentLibrary.json"
-          className="shrink-0 inline-flex items-center gap-2 bg-[#753CFF] hover:bg-[#5A2ED9] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+        <button
+          onClick={() => downloadFile(`${PROFILES_REPO}/OrcaFilamentLibrary.json`, 'OrcaFilamentLibrary.json')}
+          className="shrink-0 inline-flex items-center gap-2 bg-[#753CFF] hover:bg-[#5A2ED9] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
           Descargar todos
-        </a>
+        </button>
       </div>
 
       {/* Profile cards */}
@@ -463,16 +483,15 @@ function FilamentProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
             </div>
             <p className="text-sm text-gray-500 leading-relaxed mb-3">{f.description}</p>
             <p className="text-xs text-gray-400 font-mono mb-4">{f.specs}</p>
-            <a
-              href={`${PROFILES_REPO}/FILL3D/${encodeURIComponent(f.file)}`}
-              download={f.file}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#753CFF] hover:text-[#5A2ED9] border border-[#E4D5FF] hover:border-[#753CFF] px-4 py-2 rounded-xl transition-colors"
+            <button
+              onClick={() => downloadFile(`${PROFILES_REPO}/filament/FILL3D/${encodeURIComponent(f.file)}`, f.file)}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#753CFF] hover:text-[#5A2ED9] border border-[#E4D5FF] hover:border-[#753CFF] px-4 py-2 rounded-xl transition-colors cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
               </svg>
               Descargar perfil
-            </a>
+            </button>
           </div>
         ))}
       </div>
@@ -551,14 +570,13 @@ function FilamentProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
 
 // ─── Creality profiles page ───────────────────────────────────────────────────
 
-const CREALITY_REPO = '/wiki/profiles-creality'
+const CREALITY_REPO = 'https://raw.githubusercontent.com/julianramirezarango-source/Fill-3D_CrealityProfiles/main'
 
 const CREALITY_FILAMENTS = [
   {
     id: 'pla-basic',
     name: 'PLA Basic',
     file: 'FILL3D PLA Basic.json',
-    fileV3: 'FILL3D PLA Basic @Ender-3 V3.json',
     color: '#4CAF50',
     description: 'Filamento estándar de ácido poliláctico. Fácil de imprimir, baja deformación y buena adhesión entre capas. Ideal para prototipos, piezas decorativas y proyectos generales.',
     specs: 'Temp. boquilla: 210–230 °C · Cama: 50–60 °C',
@@ -567,7 +585,6 @@ const CREALITY_FILAMENTS = [
     id: 'pla-turbo',
     name: 'PLA Turbo',
     file: 'FILL3D PLA Turbo.json',
-    fileV3: 'FILL3D PLA Turbo @Ender-3 V3.json',
     color: '#753CFF',
     description: 'PLA de alto rendimiento fabricado en Colombia por Fill-3D. Formulado para impresión a alta velocidad con mayor resistencia mecánica y acabado premium.',
     specs: 'Temp. boquilla: 220–240 °C · Cama: 55–65 °C',
@@ -576,7 +593,6 @@ const CREALITY_FILAMENTS = [
     id: 'petg',
     name: 'PETG',
     file: 'FILL3D PETG.json',
-    fileV3: 'FILL3D PETG @Ender-3 V3.json',
     color: '#2196F3',
     description: 'Tereftalato de polietileno con glicol. Combina la facilidad del PLA con mayor resistencia mecánica y química. Buena transparencia y flexibilidad moderada.',
     specs: 'Temp. boquilla: 230–250 °C · Cama: 70–85 °C',
@@ -585,7 +601,6 @@ const CREALITY_FILAMENTS = [
     id: 'pp',
     name: 'PP',
     file: 'FILL3D PP.json',
-    fileV3: 'FILL3D PP @Ender-3 V3.json',
     color: '#FF9800',
     description: 'Polipropileno. Material muy ligero, altamente resistente a químicos y a la fatiga por flexión. Ideal para bisagras vivas, contenedores y piezas de uso industrial.',
     specs: 'Temp. boquilla: 220–240 °C · Cama: 85–100 °C',
@@ -594,7 +609,6 @@ const CREALITY_FILAMENTS = [
     id: 'ppcf',
     name: 'PP-CF',
     file: 'FILL3D PPCF.json',
-    fileV3: 'FILL3D PPCF @Ender-3 V3.json',
     color: '#333333',
     description: 'Polipropileno reforzado con fibra de carbono. Mayor rigidez, resistencia térmica y estabilidad dimensional. Requiere boquilla endurecida.',
     specs: 'Temp. boquilla: 230–250 °C · Cama: 90–105 °C · Boquilla: acero endurecido',
@@ -603,7 +617,6 @@ const CREALITY_FILAMENTS = [
     id: 'pa',
     name: 'PA / Nylon',
     file: 'FILL3D PA.json',
-    fileV3: 'FILL3D PA @Ender-3 V3.json',
     color: '#E91E63',
     description: 'Poliamida de alta performance. Excelente resistencia mecánica, al desgaste y al impacto. Ideal para engranajes, rodamientos y piezas funcionales sometidas a estrés continuo.',
     specs: 'Temp. boquilla: 240–260 °C · Cama: 70–90 °C · Secar antes de usar',
@@ -647,16 +660,15 @@ function CrealityProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
           <p className="font-semibold text-gray-800 mb-1">Descargar biblioteca completa</p>
           <p className="text-sm text-gray-500">Todos los perfiles en un solo archivo <code className="bg-white text-[#753CFF] px-1.5 py-0.5 rounded text-xs font-mono">FILL3D.json</code></p>
         </div>
-        <a
-          href={`${CREALITY_REPO}/FILL3D.json`}
-          download="FILL3D.json"
-          className="shrink-0 inline-flex items-center gap-2 bg-[#753CFF] hover:bg-[#5A2ED9] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+        <button
+          onClick={() => downloadFile(`${CREALITY_REPO}/FILL3D.json`, 'FILL3D.json')}
+          className="shrink-0 inline-flex items-center gap-2 bg-[#753CFF] hover:bg-[#5A2ED9] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
           Descargar todos
-        </a>
+        </button>
       </div>
 
       {/* Profile cards */}
@@ -669,28 +681,15 @@ function CrealityProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
             </div>
             <p className="text-sm text-gray-500 leading-relaxed mb-3">{f.description}</p>
             <p className="text-xs text-gray-400 font-mono mb-4">{f.specs}</p>
-            <div className="flex flex-wrap gap-2">
-              <a
-                href={`${CREALITY_REPO}/filament/${encodeURIComponent(f.file)}`}
-                download={f.file}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#753CFF] hover:text-[#5A2ED9] border border-[#E4D5FF] hover:border-[#753CFF] px-3 py-1.5 rounded-xl transition-colors"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                </svg>
-                Genérico
-              </a>
-              <a
-                href={`${CREALITY_REPO}/filament/${encodeURIComponent(f.fileV3)}`}
-                download={f.fileV3}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-[#753CFF] border border-gray-200 hover:border-[#753CFF] px-3 py-1.5 rounded-xl transition-colors"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                </svg>
-                Ender-3 V3
-              </a>
-            </div>
+            <button
+              onClick={() => downloadFile(`${CREALITY_REPO}/FILL3D/filament/${encodeURIComponent(f.file)}`, f.file)}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#753CFF] hover:text-[#5A2ED9] border border-[#E4D5FF] hover:border-[#753CFF] px-4 py-2 rounded-xl transition-colors cursor-pointer"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Descargar perfil
+            </button>
           </div>
         ))}
       </div>
@@ -714,7 +713,7 @@ function CrealityProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
             {
               step: '1',
               title: 'Descarga el archivo',
-              desc: 'Haz clic en "Genérico" para el perfil estándar, o en "Ender-3 V3" si tienes esa impresora. Se descargará un archivo .json.',
+              desc: 'Haz clic en "Descargar perfil" en el material que usas. Se descargará un archivo .json.',
             },
             {
               step: '2',
