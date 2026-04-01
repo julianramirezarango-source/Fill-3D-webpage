@@ -2,7 +2,7 @@
     "type": "filament",
     "name": "FILL3D PETG",
     "inherits": "FILL3D PETG @base",
-    "from": "system",
+    "from": "user",
     "setting_id": "GFF303",
     "instantiation": "true",
     "compatible_printers": [

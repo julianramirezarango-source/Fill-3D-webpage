@@ -2,7 +2,7 @@
     "type": "filament",
     "name": "FILL3D PPCF",
     "inherits": "FILL3D PPCF @base",
-    "from": "system",
+    "from": "user",
     "setting_id": "GFF305",
     "instantiation": "true",
     "compatible_printers": [
