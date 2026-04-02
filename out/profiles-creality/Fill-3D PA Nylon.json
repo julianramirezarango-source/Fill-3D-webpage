@@ -1,0 +1,40 @@
+{
+  "fan_max_speed": [
+    "40"
+  ],
+  "fan_min_speed": [
+    "0"
+  ],
+  "filament_max_volumetric_speed": [
+    "8"
+  ],
+  "filament_retraction_length": [
+    "1.2"
+  ],
+  "filament_settings_id": [
+    "Fill-3D PA Nylon"
+  ],
+  "from": "User",
+  "hot_plate_temp": [
+    "80"
+  ],
+  "hot_plate_temp_initial_layer": [
+    "80"
+  ],
+  "inherits": "Creality Generic PA",
+  "is_custom_defined": "0",
+  "name": "Fill-3D PA Nylon",
+  "nozzle_temperature": [
+    "250"
+  ],
+  "nozzle_temperature_initial_layer": [
+    "255"
+  ],
+  "nozzle_temperature_range_low": [
+    "240"
+  ],
+  "slow_down_layer_time": [
+    "10"
+  ],
+  "version": "2.2.0.4"
+}

@@ -1,0 +1,20 @@
+{
+    "type": "filament",
+    "name": "FILL3D PA @System",
+    "from": "system",
+    "setting_id": "FILL3D06S",
+    "filament_id": "FILL3D06",
+    "instantiation": "true",
+    "inherits": "FILL3D PA @base",
+    "filament_settings_id": "FILL3D PA @System",
+    "filament_vendor": [
+        "FILL3D"
+    ],
+    "filament_type": [
+        "PA"
+    ],
+    "filament_max_volumetric_speed": [
+        "18"
+    ],
+    "compatible_printers": []
+}

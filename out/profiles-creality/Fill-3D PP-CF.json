@@ -1,0 +1,40 @@
+{
+  "fan_max_speed": [
+    "20"
+  ],
+  "fan_min_speed": [
+    "0"
+  ],
+  "filament_max_volumetric_speed": [
+    "6"
+  ],
+  "filament_retraction_length": [
+    "1.5"
+  ],
+  "filament_settings_id": [
+    "Fill-3D PP-CF"
+  ],
+  "from": "User",
+  "hot_plate_temp": [
+    "95"
+  ],
+  "hot_plate_temp_initial_layer": [
+    "95"
+  ],
+  "inherits": "Creality Generic PP",
+  "is_custom_defined": "0",
+  "name": "Fill-3D PP-CF",
+  "nozzle_temperature": [
+    "240"
+  ],
+  "nozzle_temperature_initial_layer": [
+    "245"
+  ],
+  "nozzle_temperature_range_low": [
+    "230"
+  ],
+  "slow_down_layer_time": [
+    "12"
+  ],
+  "version": "2.2.0.4"
+}
