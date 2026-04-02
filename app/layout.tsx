@@ -2,14 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Calculadora de Impresión 3D | Fill-3D",
+  title: "Wiki Fill-3D | Documentación técnica de impresión 3D",
   description:
-    "Calcula el precio estimado de tu pieza en 3D. Sube tu archivo STL o 3MF y obtén una cotización al instante. Fill-3D Colombia.",
-  keywords: ["impresión 3D", "calculadora", "precio", "STL", "Colombia", "PLA", "PETG"],
+    "Documentación técnica oficial de Fill-3D Colombia. Guías de calibración, materiales, perfiles de slicer y soporte técnico.",
+  keywords: ["impresión 3D", "wiki", "guías", "calibración", "PLA", "filamento", "Colombia", "Fill-3D"],
   icons: {
-    icon: "/wiki/calculadora/logo.svg",
-    shortcut: "/wiki/calculadora/logo.svg",
-    apple: "/wiki/calculadora/logo.svg",
+    icon: "/wiki/logo.svg",
   },
 };
 
