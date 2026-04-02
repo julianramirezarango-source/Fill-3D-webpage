@@ -557,7 +557,7 @@ const CREALITY_FILAMENTS = [
   {
     id: 'pla-basic',
     name: 'PLA Basic',
-    file: 'FILL3D PLA Basic.json',
+    file: 'Fill-3D PLA Basic.json',
     color: '#4CAF50',
     description: 'Filamento estándar de ácido poliláctico. Fácil de imprimir, baja deformación y buena adhesión entre capas. Ideal para prototipos, piezas decorativas y proyectos generales.',
     specs: 'Temp. boquilla: 210–230 °C · Cama: 50–60 °C',
@@ -565,7 +565,7 @@ const CREALITY_FILAMENTS = [
   {
     id: 'pla-turbo',
     name: 'PLA Turbo',
-    file: 'FILL3D PLA Turbo.json',
+    file: 'Fill-3D PLA Turbo.json',
     color: '#753CFF',
     description: 'PLA de alto rendimiento fabricado en Colombia por Fill-3D. Formulado para impresión a alta velocidad con mayor resistencia mecánica y acabado premium.',
     specs: 'Temp. boquilla: 220–240 °C · Cama: 55–65 °C',
@@ -573,7 +573,7 @@ const CREALITY_FILAMENTS = [
   {
     id: 'petg',
     name: 'PETG',
-    file: 'FILL3D PETG.json',
+    file: 'Fill-3D PETG.json',
     color: '#2196F3',
     description: 'Tereftalato de polietileno con glicol. Combina la facilidad del PLA con mayor resistencia mecánica y química. Buena transparencia y flexibilidad moderada.',
     specs: 'Temp. boquilla: 230–250 °C · Cama: 70–85 °C',
@@ -581,7 +581,7 @@ const CREALITY_FILAMENTS = [
   {
     id: 'pp',
     name: 'PP',
-    file: 'FILL3D PP.json',
+    file: 'Fill-3D PP.json',
     color: '#FF9800',
     description: 'Polipropileno. Material muy ligero, altamente resistente a químicos y a la fatiga por flexión. Ideal para bisagras vivas, contenedores y piezas de uso industrial.',
     specs: 'Temp. boquilla: 220–240 °C · Cama: 85–100 °C',
@@ -589,7 +589,7 @@ const CREALITY_FILAMENTS = [
   {
     id: 'ppcf',
     name: 'PP-CF',
-    file: 'FILL3D PPCF.json',
+    file: 'Fill-3D PP-CF.json',
     color: '#333333',
     description: 'Polipropileno reforzado con fibra de carbono. Mayor rigidez, resistencia térmica y estabilidad dimensional. Requiere boquilla endurecida.',
     specs: 'Temp. boquilla: 230–250 °C · Cama: 90–105 °C · Boquilla: acero endurecido',
@@ -597,7 +597,7 @@ const CREALITY_FILAMENTS = [
   {
     id: 'pa',
     name: 'PA / Nylon',
-    file: 'FILL3D PA.json',
+    file: 'Fill-3D PA Nylon.json',
     color: '#E91E63',
     description: 'Poliamida de alta performance. Excelente resistencia mecánica, al desgaste y al impacto. Ideal para engranajes, rodamientos y piezas funcionales sometidas a estrés continuo.',
     specs: 'Temp. boquilla: 240–260 °C · Cama: 70–90 °C · Secar antes de usar',
@@ -639,11 +639,11 @@ function CrealityProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
       <div className="bg-[#F3EEFF] border border-[#E4D5FF] rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <p className="font-semibold text-gray-800 mb-1">Descargar biblioteca completa</p>
-          <p className="text-sm text-gray-500">Todos los perfiles en un solo archivo <code className="bg-white text-[#753CFF] px-1.5 py-0.5 rounded text-xs font-mono">FILL3D.json</code></p>
+          <p className="text-sm text-gray-500">Todos los perfiles en un solo archivo <code className="bg-white text-[#753CFF] px-1.5 py-0.5 rounded text-xs font-mono">.zip</code></p>
         </div>
         <a
-          href={`${CREALITY_REPO}/FILL3D.json`}
-          download="FILL3D.json"
+          href={`${CREALITY_REPO}/Fill-3D%20Creality%20Print%20Profiles.zip`}
+          download="Fill-3D Creality Print Profiles.zip"
           className="shrink-0 inline-flex items-center gap-2 bg-[#753CFF] hover:bg-[#5A2ED9] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -664,7 +664,7 @@ function CrealityProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
             <p className="text-sm text-gray-500 leading-relaxed mb-3">{f.description}</p>
             <p className="text-xs text-gray-400 font-mono mb-4">{f.specs}</p>
             <a
-              href={`${CREALITY_REPO}/filament/${encodeURIComponent(f.file)}`}
+              href={`${CREALITY_REPO}/${encodeURIComponent(f.file)}`}
               download={f.file}
               className="inline-flex items-center gap-2 text-sm font-semibold text-[#753CFF] hover:text-[#5A2ED9] border border-[#E4D5FF] hover:border-[#753CFF] px-4 py-2 rounded-xl transition-colors"
             >
