@@ -2,13 +2,8 @@
 	"type": "filament",
 	"name": "FILL3D PETG CF @System",
 	"from": "system",
-	"setting_id": "FILL3D07S",
-	"filament_id": "FILL3D07",
+	"setting_id": "FILL3D007SYS",
 	"instantiation": "true",
 	"inherits": "FILL3D PETG CF @base",
-	"filament_settings_id": "FILL3D PETG CF @System",
-	"filament_vendor": ["FILL3D"],
-	"filament_type": ["PETG-CF"],
-	"filament_max_volumetric_speed": ["12"],
 	"compatible_printers": []
 }

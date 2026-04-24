@@ -2,6 +2,7 @@
 	"type": "filament",
 	"name": "FILL3D PA @base",
 	"from": "system",
+	"filament_id": "FILL3D006",
 	"instantiation": "false",
 	"inherits": "fdm_filament_pa",
 	"additional_cooling_fan_speed": ["30"],
