@@ -5,31 +5,61 @@
 	"filament_id": "FILL3D004",
 	"instantiation": "false",
 	"inherits": "fdm_filament_pp",
-	"additional_cooling_fan_speed": ["50"],
-	"cool_plate_temp": ["0"],
-	"cool_plate_temp_initial_layer": ["0"],
-	"enable_pressure_advance": ["1"],
-	"eng_plate_temp": ["85"],
-	"eng_plate_temp_initial_layer": ["90"],
-	"fan_cooling_layer_time": ["100"],
-	"fan_max_speed": ["70"],
-	"fan_min_speed": ["30"],
-	"filament_cost": ["22.9"],
-	"filament_density": ["0.91"],
-	"filament_flow_ratio": ["0.98"],
-	"filament_max_volumetric_speed": ["10"],
-	"filament_type": ["PP"],
-	"filament_vendor": ["FILL3D"],
-	"hot_plate_temp": ["85"],
-	"hot_plate_temp_initial_layer": ["90"],
-	"nozzle_temperature": ["230"],
-	"nozzle_temperature_initial_layer": ["225"],
-	"nozzle_temperature_range_high": ["250"],
-	"nozzle_temperature_range_low": ["210"],
-	"pressure_advance": ["0.05"],
-	"slow_down_layer_time": ["6"],
-	"slow_down_min_speed": ["10"],
-	"temperature_vitrification": ["50"],
-	"textured_plate_temp": ["85"],
-	"textured_plate_temp_initial_layer": ["90"]
+	"filament_vendor": [
+		"FILL3D"
+	],
+	"filament_type": [
+		"PP"
+	],
+	"filament_density": [
+		"0.93"
+	],
+	"filament_max_volumetric_speed": [
+		"14"
+	],
+	"additional_cooling_fan_speed": [
+		"0"
+	],
+	"close_fan_the_first_x_layers": [
+		"5"
+	],
+	"during_print_exhaust_fan_speed": [
+		"0"
+	],
+	"enable_pressure_advance": [
+		"1"
+	],
+	"fan_max_speed": [
+		"60"
+	],
+	"fan_min_speed": [
+		"0"
+	],
+	"filament_flow_ratio": [
+		"1.045"
+	],
+	"filament_retraction_length": [
+		"0.2"
+	],
+	"hot_plate_temp": [
+		"100"
+	],
+	"hot_plate_temp_initial_layer": [
+		"100"
+	],
+	"nozzle_temperature": [
+		"300"
+	],
+	"nozzle_temperature_initial_layer": [
+		"295"
+	],
+	"overhang_fan_threshold": [
+		"25%"
+	],
+	"pressure_advance": [
+		"0.085"
+	],
+	"slow_down_layer_time": [
+		"10"
+	]
 }
