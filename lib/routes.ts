@@ -56,10 +56,14 @@ export function collectPages(nav: NavGroup[]): WikiPage[] {
 }
 
 // ─── Fetchers de BUILD (sin no-store: compatibles con output:'export') ─────────
+// El sello de build (?b=) evita que el data-cache de Next (.next/cache) sirva
+// contenido de un build anterior: cada build descarga el contenido fresco del repo.
+
+const BUILD_STAMP = Math.floor(Date.now() / 60_000) // estable dentro del build, cambia entre builds
 
 export async function fetchNavBuild(): Promise<NavGroup[]> {
   try {
-    const res = await fetch(`${REPO_RAW}/navigation.json`)
+    const res = await fetch(`${REPO_RAW}/navigation.json?b=${BUILD_STAMP}`)
     if (res.ok) {
       const data = await res.json()
       if (Array.isArray(data?.groups)) return data.groups as NavGroup[]
@@ -70,7 +74,7 @@ export async function fetchNavBuild(): Promise<NavGroup[]> {
 
 export async function fetchArticleBuild(path: string): Promise<string | null> {
   try {
-    const res = await fetch(`${REPO_RAW}/${path}`)
+    const res = await fetch(`${REPO_RAW}/${path}?b=${BUILD_STAMP}`)
     if (!res.ok) return null
     return res.text()
   } catch {
