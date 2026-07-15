@@ -2,10 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Wiki Fill-3D | Documentación técnica de impresión 3D",
+  metadataBase: new URL("https://www.fill-3d.com"),
+  title: "Wiki Fill3D — Documentación técnica de impresión 3D",
   description:
-    "Documentación técnica oficial de Fill-3D Colombia. Guías de calibración, materiales, perfiles de slicer y soporte técnico.",
-  keywords: ["impresión 3D", "wiki", "guías", "calibración", "PLA", "filamento", "Colombia", "Fill-3D"],
+    "Guías de impresión 3D en español: materiales, calibración, perfiles de slicer validados y solución de problemas. Por Fill3D, fabricantes de filamento en Itagüí, Colombia.",
+  keywords: ["impresión 3D", "wiki", "guías", "calibración", "PLA", "filamento", "Colombia", "Fill3D"],
+  alternates: {
+    canonical: "https://www.fill-3d.com/wiki/",
+  },
   icons: {
     icon: "/wiki/logo.svg",
   },

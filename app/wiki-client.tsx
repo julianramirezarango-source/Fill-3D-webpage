@@ -5,6 +5,8 @@ import {
   NavGroup, NavItem, IconType,
   DEFAULT_NAV, fetchNav, fetchArticle, extractTitle, parseMarkdown,
 } from '@/lib/wiki'
+import { hrefFor } from '@/lib/routes'
+import { FILAMENTS, CREALITY_FILAMENTS } from '@/lib/profiles-data'
 
 // ─── Brand teal ──────────────────────────────────────────────────────────────
 // #753CFF  primary
@@ -150,8 +152,8 @@ function SidebarItem({
 
   return (
     <li>
-      <button
-        onClick={() => item.path && onNavigate(item.path)}
+      <a
+        href={item.path ? hrefFor(item.path) : '/wiki/'}
         className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer
           ${isActive
             ? 'bg-[#F3EEFF] text-[#753CFF] font-medium'
@@ -165,7 +167,7 @@ function SidebarItem({
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
-      </button>
+      </a>
     </li>
   )
 }
@@ -207,19 +209,19 @@ function Sidebar({
 const FAQ_ITEMS = [
   {
     q: '¿Dónde encuentro el perfil para mi slicer?',
-    a: 'En la sección de perfiles del menú. Selecciona tu slicer, descarga el archivo e impórtalo. ¿Dudas? WhatsApp +57 314 745 8472.',
+    a: 'En la sección de perfiles del menú: OrcaSlicer o Creality Print. Descarga el archivo e impórtalo. ¿Dudas? WhatsApp +57 314 745 8472.',
   },
   {
     q: '¿Los parámetros están validados o son estimaciones?',
-    a: 'Validados en producción real con filamento de nuestra planta en Bogotá. No son rangos genéricos — funcionan en condiciones reales de impresión.',
+    a: 'Validados en producción real con filamento de nuestra planta en Itagüí, Antioquia. No son rangos genéricos — funcionan en condiciones reales de impresión.',
   },
   {
     q: '¿Qué es el Turbo Club?',
-    a: 'Membresía de Fill-3D: PLA Turbo a $65.000 COP/kg (vs $75.000 público), soporte técnico directo y prioridad en despachos.',
+    a: 'La membresía de Fill3D: pagas $8.000 menos en cada rollo de todo el catálogo, encima de tu descuento por cantidad. Planes desde $25.000/mes en www.fill-3d.com/turbo-club/.',
   },
   {
     q: '¿Hacen envíos a todo Colombia?',
-    a: 'Sí. Desde Bogotá a todo el país. Pedidos por WhatsApp, Instagram o en nuestro punto físico en Auros Calle 72, Bogotá.',
+    a: 'Sí, a todo el país desde nuestra planta en Itagüí. Envío gratis desde $80.000 y los pedidos antes de la 1:00 p.m. se despachan el mismo día hábil.',
   },
 ]
 
@@ -292,12 +294,12 @@ function WikiHome({
           <svg className="w-5 h-5 text-[#753CFF]" fill="currentColor" viewBox="0 0 24 24">
             <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
           </svg>
-          <span className="text-sm font-semibold text-[#753CFF]">Wiki Fill-3D</span>
+          <span className="text-sm font-semibold text-[#753CFF]">Wiki Fill3D</span>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Wiki Fill-3D</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Wiki Fill3D</h1>
         <p className="text-base text-gray-500 leading-relaxed max-w-xl">
           Documentación técnica oficial. Perfiles validados en producción, guías de calibración y soporte
-          técnico para imprimir mejor con <strong className="text-gray-700">PLA Turbo Fill-3D</strong> — fabricado en Colombia.
+          técnico para imprimir mejor con <strong className="text-gray-700">PLA Turbo HS Fill3D</strong> — fabricado en Itagüí, Colombia.
         </p>
       </div>
 
@@ -328,10 +330,10 @@ function WikiHome({
           {nav.map(group => {
             const first = firstLeaf(group.items)
             return (
-              <button
+              <a
                 key={group.label}
-                onClick={() => first && onNavigate(first)}
-                className="text-left bg-[#F3EEFF] hover:bg-[#E4D5FF] border border-[#E4D5FF] hover:border-[#C4B5FD] rounded-2xl p-5 transition-all cursor-pointer group"
+                href={first ? hrefFor(first) : '/wiki/'}
+                className="block text-left bg-[#F3EEFF] hover:bg-[#E4D5FF] border border-[#E4D5FF] hover:border-[#C4B5FD] rounded-2xl p-5 transition-all cursor-pointer group"
               >
                 <div className="mb-4">{CARD_ICONS[group.label] ?? <NavIcon type="circle" className="w-10 h-10 text-[#753CFF]" />}</div>
                 <h3 className="font-semibold text-gray-800 text-sm mb-1 group-hover:text-[#753CFF] transition-colors">
@@ -340,7 +342,7 @@ function WikiHome({
                 <p className="text-xs text-gray-400">
                   {group.items.reduce((acc, item) => acc + (item.children ? item.children.length : 1), 0)} artículos
                 </p>
-              </button>
+              </a>
             )
           })}
         </div>
@@ -352,57 +354,6 @@ function WikiHome({
 // ─── Filament profiles page ───────────────────────────────────────────────────
 
 const PROFILES_REPO = '/wiki/profiles'
-
-const FILAMENTS = [
-  {
-    id: 'pla-basic',
-    name: 'PLA Basic',
-    file: 'FILL3D PLA Basic @System.json',
-    color: '#4CAF50',
-    description: 'Filamento estándar de ácido poliláctico. Fácil de imprimir, baja deformación y buena adhesión entre capas. Ideal para prototipos, piezas decorativas y proyectos generales.',
-    specs: 'Temp. boquilla: 210–230 °C · Cama: 50–60 °C',
-  },
-  {
-    id: 'pla-turbo',
-    name: 'PLA Turbo',
-    file: 'FILL3D PLA Turbo @System.json',
-    color: '#753CFF',
-    description: 'PLA de alto rendimiento fabricado en Colombia por Fill-3D. Formulado para impresión a alta velocidad (hasta 350 mm/s) con mayor resistencia mecánica y acabado premium.',
-    specs: 'Temp. boquilla: 220–240 °C · Cama: 55–65 °C',
-  },
-  {
-    id: 'petg',
-    name: 'PETG',
-    file: 'FILL3D PETG @System.json',
-    color: '#2196F3',
-    description: 'Tereftalato de polietileno con glicol. Combina la facilidad de impresión del PLA con mayor resistencia mecánica y química. Buena transparencia y flexibilidad moderada.',
-    specs: 'Temp. boquilla: 230–250 °C · Cama: 70–85 °C',
-  },
-  {
-    id: 'pp',
-    name: 'PP',
-    file: 'FILL3D PP @System.json',
-    color: '#FF9800',
-    description: 'Polipropileno. Material muy ligero, altamente resistente a químicos y a la fatiga por flexión. Ideal para bisagras vivas, contenedores y piezas de uso industrial.',
-    specs: 'Temp. boquilla: 220–240 °C · Cama: 85–100 °C',
-  },
-  {
-    id: 'ppcf',
-    name: 'PP-CF',
-    file: 'FILL3D PPCF @System.json',
-    color: '#333333',
-    description: 'Polipropileno reforzado con fibra de carbono. Mayor rigidez, resistencia térmica y estabilidad dimensional que el PP estándar. Requiere boquilla endurecida.',
-    specs: 'Temp. boquilla: 230–250 °C · Cama: 90–105 °C · Boquilla: acero endurecido',
-  },
-  {
-    id: 'pa',
-    name: 'PA / Nylon',
-    file: 'FILL3D PA @System.json',
-    color: '#E91E63',
-    description: 'Poliamida de alta performance. Excelente resistencia mecánica, al desgaste y al impacto. Ideal para engranajes, rodamientos y piezas funcionales sometidas a estrés continuo.',
-    specs: 'Temp. boquilla: 240–260 °C · Cama: 70–90 °C · Secar antes de usar',
-  },
-]
 
 function FilamentProfilesPage({ onNavigate }: { onNavigate: (path: string) => void }) {
   return (
@@ -429,9 +380,9 @@ function FilamentProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
           </svg>
           <span className="text-sm font-semibold text-[#753CFF]">Perfiles de filamento</span>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-3">Perfiles OrcaSlicer Fill-3D</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-3">Perfiles OrcaSlicer Fill3D</h1>
         <p className="text-gray-500 leading-relaxed">
-          Perfiles de filamento oficiales de Fill-3D para OrcaSlicer. Parámetros validados en producción real con filamento fabricado en nuestra planta en Bogotá, Colombia.
+          Perfiles de filamento oficiales de Fill-3D para OrcaSlicer. Parámetros validados en producción real con filamento fabricado en nuestra planta en Itagüí, Antioquia.
         </p>
       </div>
 
@@ -553,57 +504,6 @@ function FilamentProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
 
 const CREALITY_REPO = '/wiki/profiles-creality'
 
-const CREALITY_FILAMENTS = [
-  {
-    id: 'pla-basic',
-    name: 'PLA Basic',
-    file: 'Fill-3D PLA Basic.json',
-    color: '#4CAF50',
-    description: 'Filamento estándar de ácido poliláctico. Fácil de imprimir, baja deformación y buena adhesión entre capas. Ideal para prototipos, piezas decorativas y proyectos generales.',
-    specs: 'Temp. boquilla: 210–230 °C · Cama: 50–60 °C',
-  },
-  {
-    id: 'pla-turbo',
-    name: 'PLA Turbo',
-    file: 'Fill-3D PLA Turbo.json',
-    color: '#753CFF',
-    description: 'PLA de alto rendimiento fabricado en Colombia por Fill-3D. Formulado para impresión a alta velocidad con mayor resistencia mecánica y acabado premium.',
-    specs: 'Temp. boquilla: 220–240 °C · Cama: 55–65 °C',
-  },
-  {
-    id: 'petg',
-    name: 'PETG',
-    file: 'Fill-3D PETG.json',
-    color: '#2196F3',
-    description: 'Tereftalato de polietileno con glicol. Combina la facilidad del PLA con mayor resistencia mecánica y química. Buena transparencia y flexibilidad moderada.',
-    specs: 'Temp. boquilla: 230–250 °C · Cama: 70–85 °C',
-  },
-  {
-    id: 'pp',
-    name: 'PP',
-    file: 'Fill-3D PP.json',
-    color: '#FF9800',
-    description: 'Polipropileno. Material muy ligero, altamente resistente a químicos y a la fatiga por flexión. Ideal para bisagras vivas, contenedores y piezas de uso industrial.',
-    specs: 'Temp. boquilla: 220–240 °C · Cama: 85–100 °C',
-  },
-  {
-    id: 'ppcf',
-    name: 'PP-CF',
-    file: 'Fill-3D PP-CF.json',
-    color: '#333333',
-    description: 'Polipropileno reforzado con fibra de carbono. Mayor rigidez, resistencia térmica y estabilidad dimensional. Requiere boquilla endurecida.',
-    specs: 'Temp. boquilla: 230–250 °C · Cama: 90–105 °C · Boquilla: acero endurecido',
-  },
-  {
-    id: 'pa',
-    name: 'PA / Nylon',
-    file: 'Fill-3D PA Nylon.json',
-    color: '#E91E63',
-    description: 'Poliamida de alta performance. Excelente resistencia mecánica, al desgaste y al impacto. Ideal para engranajes, rodamientos y piezas funcionales sometidas a estrés continuo.',
-    specs: 'Temp. boquilla: 240–260 °C · Cama: 70–90 °C · Secar antes de usar',
-  },
-]
-
 function CrealityProfilesPage({ onNavigate }: { onNavigate: (path: string) => void }) {
   return (
     <div className="max-w-3xl">
@@ -629,7 +529,7 @@ function CrealityProfilesPage({ onNavigate }: { onNavigate: (path: string) => vo
           </svg>
           <span className="text-sm font-semibold text-[#753CFF]">Perfiles de filamento</span>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-3">Perfiles Creality Print Fill-3D</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-3">Perfiles Creality Print Fill3D</h1>
         <p className="text-gray-500 leading-relaxed">
           Perfiles de filamento oficiales de Fill-3D para Creality Print. Incluye perfiles genéricos y optimizados para la <strong className="text-gray-700">Ender-3 V3</strong>. Parámetros validados en producción real.
         </p>
@@ -783,7 +683,12 @@ export default function WikiClient() {
   useEffect(() => {
     const sync = () => {
       const hash = decodeURIComponent(window.location.hash.slice(1))
-      setCurrentPath(hash || null)
+      if (hash) {
+        // Compatibilidad: los hashes del router viejo redirigen a las rutas estáticas
+        window.location.replace(hrefFor(hash))
+        return
+      }
+      setCurrentPath(null)
     }
     sync()
     window.addEventListener('hashchange', sync)
@@ -871,7 +776,7 @@ export default function WikiClient() {
         <nav className="flex items-center gap-1">
           {/* Calculadora button */}
           <a
-            href="https://fill-3d.com/wiki/calculadora/"
+            href="https://www.fill-3d.com/wiki/calculadora/"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden sm:inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
@@ -882,7 +787,7 @@ export default function WikiClient() {
             Calculadora
           </a>
           <a
-            href="https://fill-3d.com"
+            href="https://www.fill-3d.com"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden sm:block text-sm text-gray-500 hover:text-gray-800 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
@@ -890,7 +795,7 @@ export default function WikiClient() {
             Tienda
           </a>
           <a
-            href="https://fill-3d.com/turbo-club/"
+            href="https://www.fill-3d.com/turbo-club/"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden sm:block text-sm text-gray-500 hover:text-gray-800 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
